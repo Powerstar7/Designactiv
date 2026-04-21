@@ -1,0 +1,26 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+export interface Profile {
+  id: string;
+  full_name: string;
+  email: string;
+  is_admin: boolean;
+  has_access: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ToolVideo {
+  id: string;
+  tool_id: string;
+  youtube_video_id: string;
+  title: string;
+  description: string;
+  updated_at: string;
+  updated_by: string | null;
+}
