@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import { Play, Volume2, VolumeX, ChevronRight, Star } from 'lucide-react';
+import { ChevronRight, Star } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import YouTubePlayer from './YouTubePlayer';
 
 interface HeroProps {
   onNavigate: (page: string) => void;
 }
 
+const HERO_VIDEO_ID = 's9MvSFNVmzk';
+
 export default function Hero({ onNavigate }: HeroProps) {
-  const [soundOn, setSoundOn] = useState(false);
   const { t } = useLanguage();
 
   return (
@@ -69,36 +70,7 @@ export default function Hero({ onNavigate }: HeroProps) {
         </div>
 
         <div className="max-w-4xl mx-auto">
-          <div className="video-container aspect-video relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#160f2e] to-[#080515] flex flex-col items-center justify-center">
-              <div className="grid grid-cols-3 gap-4 w-full h-full p-6 opacity-30">
-                {Array.from({ length: 9 }).map((_, i) => (
-                  <div key={i} className="bg-[#2a1f5c] rounded-lg animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />
-                ))}
-              </div>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <div className="w-20 h-20 bg-brand-500/20 rounded-full flex items-center justify-center mb-4 group-hover:bg-brand-500/30 transition-colors">
-                  <Play className="w-8 h-8 text-brand-400 ml-1" fill="currentColor" />
-                </div>
-                <p className="text-gray-300 font-semibold text-lg mb-1">{t('hero.videoPlaying')}</p>
-                <p className="text-gray-500 text-sm">{t('hero.videoSub')}</p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setSoundOn(!soundOn)}
-              className="absolute bottom-4 right-4 flex items-center gap-2 bg-black/70 hover:bg-black/90 text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors z-10"
-            >
-              {soundOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-              {soundOn ? t('hero.soundOn') : t('hero.soundOff')}
-            </button>
-
-            <div className="absolute top-4 left-4 flex items-center gap-2 bg-brand-500/80 text-white text-xs font-bold px-3 py-1.5 rounded-full">
-              <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-              {t('hero.liveDemo')}
-            </div>
-          </div>
-
+          <YouTubePlayer videoId={HERO_VIDEO_ID} accentColor="#a855f7" />
           <p className="text-center text-gray-500 text-sm mt-4">
             {t('hero.videoCaption')}
           </p>

@@ -24,3 +24,17 @@ export interface ToolVideo {
   updated_at: string;
   updated_by: string | null;
 }
+
+export interface UserToolCredential {
+  id: string;
+  user_id: string;
+  tool_id: string;
+  external_login: string;
+  external_password: string;
+  platform_url: string;
+  notes: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  updated_by: string | null;
+}

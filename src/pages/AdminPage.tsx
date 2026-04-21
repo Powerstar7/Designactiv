@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Shield, Users, Video, LogOut, Settings, ChevronRight, Search, CheckCircle2, XCircle, CreditCard as Edit3, Save, X, RefreshCw, BarChart3, Eye, EyeOff, UserCheck } from 'lucide-react';
+import { Shield, Users, Video, LogOut, Settings, ChevronRight, Search, CheckCircle2, XCircle, CreditCard as Edit3, Save, X, RefreshCw, BarChart3, Eye, EyeOff, UserCheck, Key } from 'lucide-react';
 import { supabase, Profile, ToolVideo } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { tools } from '../data/tools';
 import { useLanguage } from '../context/LanguageContext';
+import UserCredentialsPanel from '../components/UserCredentialsPanel';
 
 interface AdminPageProps {
   onNavigate: (page: string) => void;
@@ -24,6 +25,7 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
   const [videoEdits, setVideoEdits] = useState<Record<string, { youtube_video_id: string; title: string; description: string }>>({});
   const [savingVideo, setSavingVideo] = useState<string | null>(null);
   const [togglingUser, setTogglingUser] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
 
   useEffect(() => {
     if (activeTab === 'users') loadUsers();
@@ -218,7 +220,11 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
           </div>
         )}
 
-        {activeTab === 'users' && (
+        {activeTab === 'users' && selectedUser && (
+          <UserCredentialsPanel user={selectedUser} onBack={() => setSelectedUser(null)} />
+        )}
+
+        {activeTab === 'users' && !selectedUser && (
           <div>
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -303,23 +309,33 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                           )}
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <button
-                            onClick={() => toggleAccess(u.id, u.has_access)}
-                            disabled={togglingUser === u.id || u.is_admin}
-                            className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all disabled:opacity-40 ${
-                              u.has_access
-                                ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
-                                : 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
-                            }`}
-                          >
-                            {togglingUser === u.id ? (
-                              <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin inline-block" />
-                            ) : u.has_access ? (
-                              <><EyeOff className="w-3 h-3 inline mr-1" />{t('admin.revoke')}</>
-                            ) : (
-                              <><Eye className="w-3 h-3 inline mr-1" />{t('admin.grant')}</>
-                            )}
-                          </button>
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => toggleAccess(u.id, u.has_access)}
+                              disabled={togglingUser === u.id || u.is_admin}
+                              className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all disabled:opacity-40 ${
+                                u.has_access
+                                  ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                                  : 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
+                              }`}
+                            >
+                              {togglingUser === u.id ? (
+                                <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin inline-block" />
+                              ) : u.has_access ? (
+                                <><EyeOff className="w-3 h-3 inline mr-1" />{t('admin.revoke')}</>
+                              ) : (
+                                <><Eye className="w-3 h-3 inline mr-1" />{t('admin.grant')}</>
+                              )}
+                            </button>
+                            <button
+                              onClick={() => setSelectedUser(u)}
+                              disabled={u.is_admin}
+                              className="text-xs font-bold px-3 py-1.5 rounded-lg bg-brand-500/10 text-brand-400 hover:bg-brand-500/20 transition-all disabled:opacity-40 inline-flex items-center gap-1"
+                            >
+                              <Key className="w-3 h-3" />
+                              {t('admin.credentials')}
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
