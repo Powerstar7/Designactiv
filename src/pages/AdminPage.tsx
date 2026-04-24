@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Users, Video, LogOut, Settings, ChevronRight, Search, CheckCircle2, XCircle, CreditCard as Edit3, Save, X, RefreshCw, BarChart3, Eye, EyeOff, UserCheck, Key } from 'lucide-react';
+import { Shield, Users, Video, LogOut, ChevronRight, Search, CheckCircle2, XCircle, CreditCard as Edit3, Save, X, RefreshCw, BarChart3, Eye, EyeOff, UserCheck, Key, TrendingUp, Home, Wrench, ExternalLink } from 'lucide-react';
 import { supabase, Profile, ToolVideo } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { tools } from '../data/tools';
@@ -26,11 +26,26 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
   const [savingVideo, setSavingVideo] = useState<string | null>(null);
   const [togglingUser, setTogglingUser] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
+  const [credentialsCount, setCredentialsCount] = useState(0);
+
+  useEffect(() => {
+    loadUsers();
+    loadVideos();
+    loadCredentialsCount();
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'users') loadUsers();
     if (activeTab === 'videos') loadVideos();
   }, [activeTab]);
+
+  const loadCredentialsCount = async () => {
+    const { count } = await supabase
+      .from('user_tool_credentials')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_active', true);
+    setCredentialsCount(count ?? 0);
+  };
 
   const loadUsers = async () => {
     setLoadingUsers(true);
@@ -132,6 +147,14 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
         </nav>
 
         <div className="p-4 border-t border-[#2a1f5c] space-y-2">
+          <button
+            onClick={() => onNavigate('home')}
+            className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all text-sm font-semibold"
+          >
+            <Home className="w-4 h-4" />
+            {t('admin.viewSite')}
+            <ExternalLink className="w-3 h-3 ml-auto" />
+          </button>
           <div className="px-4 py-3 rounded-xl bg-[#160f2e]">
             <p className="text-white text-xs font-bold truncate">{profile?.full_name || 'Admin'}</p>
             <p className="text-gray-500 text-xs truncate">{profile?.email}</p>
@@ -152,33 +175,104 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
             <h1 className="text-2xl font-black text-white mb-2">{t('admin.dashboard')}</h1>
             <p className="text-gray-500 text-sm mb-8">{t('admin.welcome')} {profile?.full_name || 'Admin'}</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               {[
                 { label: t('admin.totalUsers'), value: totalUsers, icon: Users, color: 'brand' },
-                { label: t('admin.usersAccess'), value: accessUsers, icon: UserCheck, color: 'green' },
-                { label: t('admin.adminAccounts'), value: adminUsers, icon: Shield, color: 'blue' },
-              ].map(({ label, value, icon: Icon, color }) => (
-                <div key={label} className="bg-[#160f2e] border border-[#2a1f5c] rounded-2xl p-6">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${
-                    color === 'brand' ? 'bg-brand-500/20' : color === 'green' ? 'bg-green-500/20' : 'bg-blue-500/20'
-                  }`}>
-                    <Icon className={`w-5 h-5 ${
-                      color === 'brand' ? 'text-brand-400' : color === 'green' ? 'text-green-400' : 'text-blue-400'
-                    }`} />
+                { label: t('admin.paidUsers'), value: accessUsers, icon: UserCheck, color: 'green' },
+                { label: t('admin.configuredVideos'), value: videos.length, icon: Video, color: 'cyan' },
+                { label: t('admin.credentialsActive'), value: credentialsCount, icon: Key, color: 'amber' },
+              ].map(({ label, value, icon: Icon, color }) => {
+                const colorMap: Record<string, { bg: string; text: string }> = {
+                  brand: { bg: 'bg-brand-500/15', text: 'text-brand-400' },
+                  green: { bg: 'bg-green-500/15', text: 'text-green-400' },
+                  cyan: { bg: 'bg-cyan-500/15', text: 'text-cyan-400' },
+                  amber: { bg: 'bg-amber-500/15', text: 'text-amber-400' },
+                };
+                const c = colorMap[color];
+                return (
+                  <div key={label} className="bg-[#160f2e] border border-[#2a1f5c] rounded-2xl p-5 hover:border-brand-500/40 transition-colors">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-gray-500 text-xs font-semibold">{label}</p>
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${c.bg}`}>
+                        <Icon className={`w-4 h-4 ${c.text}`} />
+                      </div>
+                    </div>
+                    <p className="text-3xl font-black text-white mb-2">{value}</p>
+                    <div className="inline-flex items-center gap-1 text-xs text-green-400">
+                      <TrendingUp className="w-3 h-3" />
+                      <span className="font-semibold">{t('admin.active')}</span>
+                    </div>
                   </div>
-                  <p className="text-3xl font-black text-white mb-1">{value}</p>
-                  <p className="text-gray-500 text-sm">{label}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
               <div className="bg-[#160f2e] border border-[#2a1f5c] rounded-2xl p-6">
-                <h3 className="text-white font-black mb-4 flex items-center gap-2">
-                  <Video className="w-4 h-4 text-brand-400" />
-                  {t('admin.quickActions')}
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="text-white font-black flex items-center gap-2">
+                    <Users className="w-4 h-4 text-brand-400" />
+                    {t('admin.recentUsers')}
+                  </h3>
+                  <button
+                    onClick={() => setActiveTab('users')}
+                    className="text-xs font-semibold text-brand-400 hover:text-brand-300 transition-colors inline-flex items-center gap-1"
+                  >
+                    {t('admin.viewAll')}
+                    <ChevronRight className="w-3 h-3" />
+                  </button>
+                </div>
+                <p className="text-gray-500 text-xs mb-4">{t('admin.recentUsersDesc')}</p>
+
+                {loadingUsers ? (
+                  <div className="flex items-center justify-center py-10">
+                    <span className="w-6 h-6 border-2 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
+                  </div>
+                ) : users.length === 0 ? (
+                  <p className="text-gray-600 text-sm py-6 text-center">{t('admin.noRecentUsers')}</p>
+                ) : (
+                  <ul className="divide-y divide-[#2a1f5c]">
+                    {users.slice(0, 5).map((u) => (
+                      <li key={u.id} className="flex items-center gap-3 py-3">
+                        <div className="w-9 h-9 rounded-full bg-brand-500/20 border border-brand-500/30 flex items-center justify-center text-brand-400 font-black text-xs flex-shrink-0">
+                          {(u.full_name || u.email)[0]?.toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white text-sm font-semibold truncate">{u.full_name || '—'}</p>
+                          <p className="text-gray-500 text-xs truncate">{u.email}</p>
+                        </div>
+                        <span className="text-gray-500 text-xs flex-shrink-0">
+                          {new Date(u.created_at).toLocaleDateString()}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <div className="bg-[#160f2e] border border-[#2a1f5c] rounded-2xl p-6">
+                <h3 className="text-white font-black mb-1 flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-brand-400" />
+                  {t('admin.systemActivity')}
                 </h3>
-                <div className="space-y-2">
+                <p className="text-gray-500 text-xs mb-4">{t('admin.activityDesc')}</p>
+
+                <ul className="space-y-3">
+                  {[
+                    { label: t('admin.toolsAvailable'), value: `${tools.length} ${t('admin.apps')}`, icon: Wrench, color: 'text-brand-400' },
+                    { label: t('admin.videosConfigured'), value: `${videos.length} / ${tools.length}`, icon: Video, color: 'text-cyan-400' },
+                    { label: t('admin.totalCredentials'), value: `${credentialsCount} ${t('admin.active')}`, icon: Key, color: 'text-amber-400' },
+                    { label: t('admin.adminAccounts'), value: `${adminUsers}`, icon: Shield, color: 'text-blue-400' },
+                  ].map(({ label, value, icon: Icon, color }) => (
+                    <li key={label} className="flex items-center gap-3 py-2 border-b border-[#2a1f5c] last:border-b-0">
+                      <Icon className={`w-4 h-4 ${color} flex-shrink-0`} />
+                      <span className="text-gray-300 text-sm flex-1">{label}</span>
+                      <span className="text-white text-sm font-bold">{value}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-5 pt-5 border-t border-[#2a1f5c] space-y-2">
                   <button
                     onClick={() => setActiveTab('users')}
                     className="w-full flex items-center gap-3 p-3 rounded-xl bg-[#1e1540] hover:bg-[#2a1f5c] transition-all text-sm text-gray-300 hover:text-white"
@@ -195,25 +289,6 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
                     {t('admin.updateVideos')}
                     <ChevronRight className="w-4 h-4 ml-auto" />
                   </button>
-                </div>
-              </div>
-
-              <div className="bg-[#160f2e] border border-[#2a1f5c] rounded-2xl p-6">
-                <h3 className="text-white font-black mb-4 flex items-center gap-2">
-                  <Settings className="w-4 h-4 text-brand-400" />
-                  {t('admin.platformInfo')}
-                </h3>
-                <div className="space-y-3">
-                  {[
-                    { label: t('admin.totalTools'), value: `${tools.length} ${t('admin.apps')}` },
-                    { label: t('admin.platform'), value: 'DesignActiv' },
-                    { label: t('admin.adminAccess'), value: t('admin.restricted') },
-                  ].map(({ label, value }) => (
-                    <div key={label} className="flex items-center justify-between py-2 border-b border-[#2a1f5c]">
-                      <span className="text-gray-400 text-sm">{label}</span>
-                      <span className="text-white text-sm font-semibold">{value}</span>
-                    </div>
-                  ))}
                 </div>
               </div>
             </div>
