@@ -1,164 +1,117 @@
-import { Check, Shield, Zap, Gift, Star } from 'lucide-react';
-import { useLanguage } from '../context/LanguageContext';
-import { tools, localizeTool } from '../data/tools';
+import React, { useState } from 'react';
+import { Check, Loader2 } from 'lucide-react';
+import { stripeProducts } from '../stripe-config';
+import { useAuth } from '../context/AuthContext';
 
-interface PricingSectionProps {
-  onNavigate: (page: string) => void;
-}
+export function PricingSection() {
+  const { user } = useAuth();
+  const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
 
-const mainAppIds = [
-  'background-remover',
-  'all-in-one-design',
-  'ad-banner-animator',
-  'logo-creator',
-  'smart-object-remover',
-  'advanced-image-editor',
-];
+  const handleCheckout = async (priceId: string) => {
+    if (!user) {
+      alert('Por favor, faça login para continuar');
+      return;
+    }
 
-const bonusAppIds = ['video-survey-pro', '3d-motion-photos', 'image-to-svg'];
+    setLoadingPriceId(priceId);
 
-export default function PricingSection({ onNavigate }: PricingSectionProps) {
-  const { t, lang } = useLanguage();
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId,
+          successUrl: `${window.location.origin}/success`,
+          cancelUrl: `${window.location.origin}/pricing`,
+        }),
+      });
 
-  const appLabel = (id: string) => {
-    const tool = tools.find((x) => x.id === id);
-    if (!tool) return id;
-    return localizeTool(tool, lang).subtitle;
+      const data = await response.json();
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('Failed to create checkout session');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('Erro ao processar pagamento. Tente novamente.');
+    } finally {
+      setLoadingPriceId(null);
+    }
   };
 
-  const mainApps = mainAppIds.map(appLabel);
-  const bonusApps = bonusAppIds.map(appLabel);
-
-  const planFeatures = [
-    t('pricing.allTools'),
-    t('pricing.unlimited'),
-    t('pricing.commercial'),
-    t('pricing.cloud'),
-    t('pricing.support'),
-    t('pricing.templates'),
-    t('pricing.agency'),
-  ];
-
   return (
-    <section className="bg-[#0f0a1e] py-16 px-4" id="pricing">
-      <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 bg-brand-500/10 border border-brand-500/30 rounded-full px-5 py-2 mb-4">
-            <Star className="w-4 h-4 text-brand-400 fill-brand-400" />
-            <span className="text-brand-400 text-sm font-semibold">{t('pricing.badge')}</span>
-          </div>
-          <h2 className="text-3xl md:text-4xl font-black text-white mb-3">
-            {t('pricing.title')} <span className="bg-gradient-to-r from-purple-400 to-fuchsia-400 bg-clip-text text-transparent">{t('pricing.titleHighlight')}</span> {t('pricing.title2')}
+    <section className="py-20 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            Escolha Seu Plano
           </h2>
-          <p className="text-gray-400 text-lg max-w-xl mx-auto">
-            {t('pricing.subtitle')}
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Acesse todas as ferramentas profissionais de design com preços acessíveis
           </p>
         </div>
 
-        <div
-          className="relative rounded-3xl overflow-hidden"
-          style={{
-            background: 'linear-gradient(135deg, #160f2e, #1e1540)',
-            border: '2px solid #7c3aed',
-            boxShadow: '0 0 60px rgba(124,58,237,0.2)',
-          }}
-        >
-          <div className="bg-gradient-to-r from-brand-500 to-brand-600 py-3 px-6 text-center">
-            <span className="text-white font-black text-sm tracking-widest uppercase">
-              {t('pricing.packTitle')}
-            </span>
-          </div>
-
-          <div className="p-8 md:p-10">
-            <div className="flex flex-col md:flex-row gap-10">
-              <div className="flex-1">
-                <div className="flex items-baseline gap-2 mb-6">
-                  <span className="text-gray-400 text-2xl font-bold">$</span>
-                  <span className="text-7xl font-black text-white leading-none">49</span>
-                  <div className="text-gray-400 text-sm leading-tight ml-1">
-                    <div>/</div>
-                    <div>{t('pricing.lifetimeAccess')}</div>
-                  </div>
-                </div>
-
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {stripeProducts.map((product) => (
+            <div
+              key={product.id}
+              className="bg-white rounded-2xl shadow-xl p-8 relative border-2 border-transparent hover:border-blue-500 transition-all duration-300"
+            >
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                  {product.name}
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  {product.description}
+                </p>
                 <div className="mb-6">
-                  <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-3">{t('pricing.whatsIncluded')}</p>
-                  <ul className="space-y-2.5">
-                    {planFeatures.map((feature) => (
-                      <li key={feature} className="flex items-center gap-3">
-                        <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
-                        <span className="text-gray-200 text-sm font-medium">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <button
-                  onClick={() => onNavigate('checkout')}
-                  className="w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-black text-lg py-4 rounded-2xl transition-all duration-300 hover:scale-105 shadow-xl"
-                >
-                  {t('pricing.buyNow')}
-                </button>
-
-                <div className="flex items-center justify-center gap-2 mt-4 text-green-400 text-xs">
-                  <Shield className="w-3.5 h-3.5" />
-                  <span>{t('pricing.moneyBack')}</span>
+                  <span className="text-5xl font-bold text-gray-900">
+                    {product.currencySymbol}{product.price}
+                  </span>
+                  <span className="text-gray-600 ml-2">
+                    {product.mode === 'subscription' ? '/mês' : 'pagamento único'}
+                  </span>
                 </div>
               </div>
 
-              <div className="flex-1 space-y-5">
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Zap className="w-4 h-4 text-brand-400" />
-                    <p className="text-white font-black text-sm uppercase tracking-wide">{t('pricing.powerfulApps')}</p>
-                  </div>
-                  <ul className="space-y-2">
-                    {mainApps.map((app) => (
-                      <li key={app} className="flex items-center gap-2.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-brand-400 flex-shrink-0" />
-                        <span className="text-gray-300 text-sm">{app}</span>
-                      </li>
-                    ))}
-                  </ul>
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center">
+                  <Check className="w-5 h-5 text-green-500 mr-3" />
+                  <span className="text-gray-700">Acesso a todas as ferramentas</span>
                 </div>
-
-                <div
-                  className="rounded-2xl p-5"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.04))',
-                    border: '1px solid rgba(34,197,94,0.3)',
-                  }}
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    <Gift className="w-4 h-4 text-green-400" />
-                    <p className="text-green-400 font-black text-sm uppercase tracking-wide">{t('pricing.bonusApps')}</p>
-                  </div>
-                  <ul className="space-y-2">
-                    {bonusApps.map((app) => (
-                      <li key={app} className="flex items-center gap-2.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
-                        <span className="text-green-300 text-sm font-medium">{app}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="text-green-500 text-xs mt-3 font-semibold">
-                    {t('pricing.bonusNote')}
-                  </p>
+                <div className="flex items-center">
+                  <Check className="w-5 h-5 text-green-500 mr-3" />
+                  <span className="text-gray-700">Licença comercial incluída</span>
+                </div>
+                <div className="flex items-center">
+                  <Check className="w-5 h-5 text-green-500 mr-3" />
+                  <span className="text-gray-700">Suporte técnico</span>
+                </div>
+                <div className="flex items-center">
+                  <Check className="w-5 h-5 text-green-500 mr-3" />
+                  <span className="text-gray-700">Atualizações gratuitas</span>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
 
-        <div className="mt-8 grid grid-cols-3 gap-4 text-center">
-          {[
-            { label: t('pricing.oneTime'), sub: t('pricing.noSubs') },
-            { label: t('pricing.lifetime'), sub: t('pricing.payOnce') },
-            { label: t('pricing.nineApps'), sub: t('pricing.sixPlusThree') },
-          ].map((item) => (
-            <div key={item.label} className="bg-[#160f2e] rounded-xl p-4 border border-[#2a1f5c]">
-              <p className="text-white font-black text-sm">{item.label}</p>
-              <p className="text-gray-500 text-xs mt-1">{item.sub}</p>
+              <button
+                onClick={() => handleCheckout(product.priceId)}
+                disabled={loadingPriceId === product.priceId}
+                className="w-full bg-blue-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {loadingPriceId === product.priceId ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Processando...
+                  </>
+                ) : (
+                  'Comprar Agora'
+                )}
+              </button>
             </div>
           ))}
         </div>

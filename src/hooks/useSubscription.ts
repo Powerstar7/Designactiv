@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { useAuth } from './useAuth';
+import { useAuth } from '../context/AuthContext';
 import { getProductByPriceId } from '../stripe-config';
 
 interface SubscriptionData {
@@ -27,18 +27,16 @@ export function useSubscription() {
       try {
         const { data, error } = await supabase
           .from('stripe_user_subscriptions')
-          .select('subscription_status, price_id, current_period_start, current_period_end, cancel_at_period_end')
-          .maybeSingle();
+          .select('*')
+          .single();
 
-        if (error) {
+        if (error && error.code !== 'PGRST116') {
           console.error('Error fetching subscription:', error);
-          setSubscription(null);
         } else {
           setSubscription(data);
         }
       } catch (error) {
         console.error('Error fetching subscription:', error);
-        setSubscription(null);
       } finally {
         setLoading(false);
       }
@@ -48,8 +46,12 @@ export function useSubscription() {
   }, [user]);
 
   const getActivePlan = () => {
-    if (!subscription?.price_id) return null;
-    return getProductByPriceId(subscription.price_id);
+    if (!subscription || !subscription.price_id) {
+      return null;
+    }
+
+    const product = getProductByPriceId(subscription.price_id);
+    return product ? product.name : 'Plano Ativo';
   };
 
   const isActive = subscription?.subscription_status === 'active';

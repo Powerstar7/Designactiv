@@ -14,24 +14,28 @@ export const stripeProducts: StripeProduct[] = [
     id: 'prod_L5JvWiarSUZqaa',
     priceId: 'price_1KP9HVHfhBIMfl3soSGoGMyi',
     name: 'Pacote Básico',
-    description: 'Access to basic features and tools',
+    description: 'Acesso completo às ferramentas de design profissional',
     price: 18.00,
     currency: 'eur',
     currencySymbol: '€',
-    mode: 'payment',
+    mode: 'payment'
   },
   {
     id: 'prod_L5Jtf3Xx3pvgZY',
     priceId: 'price_1KP9FxHfhBIMfl3ssFIodkEm',
-    name: 'Premium Package',
-    description: 'Full access to all premium features',
+    name: 'Pacote Premium',
+    description: 'Acesso premium com recursos avançados e suporte prioritário',
     price: 18.00,
     currency: 'eur',
     currencySymbol: '€',
-    mode: 'payment',
-  },
+    mode: 'payment'
+  }
 ];
 
-export function getProductByPriceId(priceId: string): StripeProduct | undefined {
+export const getProductByPriceId = (priceId: string): StripeProduct | undefined => {
   return stripeProducts.find(product => product.priceId === priceId);
-}
+};
+
+export const getProductById = (id: string): StripeProduct | undefined => {
+  return stripeProducts.find(product => product.id === id);
+};
