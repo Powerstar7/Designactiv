@@ -1,9 +1,42 @@
-import { useState } from 'react';
-import { Check, Shield, Gift, Copy, CheckCircle2, Zap, ArrowLeft, ExternalLink } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Check, Shield, Gift, Copy, CheckCircle2, Zap, ArrowLeft, ExternalLink, AlertCircle } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 interface CheckoutPageProps {
   onNavigate: (page: string) => void;
+}
+
+declare global {
+  interface Window {
+    paypal?: {
+      Buttons: (config: Record<string, unknown>) => { render: (selector: string | HTMLElement) => Promise<void> };
+    };
+  }
+}
+
+const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID as string | undefined;
+const CHECKOUT_PRICE = import.meta.env.VITE_CHECKOUT_PRICE_USD || '49';
+
+let paypalSdkPromise: Promise<void> | null = null;
+
+function loadPaypalSdk(): Promise<void> {
+  if (paypalSdkPromise) return paypalSdkPromise;
+  if (!PAYPAL_CLIENT_ID) return Promise.reject(new Error('paypal-not-configured'));
+  paypalSdkPromise = new Promise((resolve, reject) => {
+    const existing = document.getElementById('paypal-sdk') as HTMLScriptElement | null;
+    if (existing) {
+      if (window.paypal) resolve();
+      else existing.addEventListener('load', () => resolve());
+      return;
+    }
+    const s = document.createElement('script');
+    s.id = 'paypal-sdk';
+    s.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(PAYPAL_CLIENT_ID)}&currency=USD&intent=capture`;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('paypal-load-failed'));
+    document.body.appendChild(s);
+  });
+  return paypalSdkPromise;
 }
 
 const mainApps = [
@@ -28,9 +61,59 @@ type PayMethod = 'pix' | 'paypal' | 'stripe';
 export default function CheckoutPage({ onNavigate }: CheckoutPageProps) {
   const [selectedMethod, setSelectedMethod] = useState<PayMethod>('pix');
   const [copied, setCopied] = useState(false);
-  const [stripeForm, setStripeForm] = useState({ name: '', email: '', card: '', expiry: '', cvv: '' });
-  const [paypalEmail, setPaypalEmail] = useState('');
+  const [paypalStatus, setPaypalStatus] = useState<'idle' | 'loading' | 'ready' | 'error' | 'success'>('idle');
+  const [paypalError, setPaypalError] = useState<string | null>(null);
+  const [paypalOrderId, setPaypalOrderId] = useState<string | null>(null);
+  const paypalRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
+
+  useEffect(() => {
+    if (selectedMethod !== 'paypal') return;
+    if (!PAYPAL_CLIENT_ID) {
+      setPaypalStatus('error');
+      setPaypalError('paypal-not-configured');
+      return;
+    }
+    setPaypalStatus('loading');
+    setPaypalError(null);
+    loadPaypalSdk()
+      .then(() => {
+        if (!paypalRef.current || !window.paypal) return;
+        paypalRef.current.innerHTML = '';
+        window.paypal
+          .Buttons({
+            style: { layout: 'vertical', color: 'gold', shape: 'pill', label: 'paypal' },
+            createOrder: (_data: unknown, actions: { order: { create: (o: unknown) => Promise<string> } }) =>
+              actions.order.create({
+                purchase_units: [
+                  {
+                    amount: { value: String(CHECKOUT_PRICE), currency_code: 'USD' },
+                    description: 'DesignActiv — 9 Apps Pack',
+                  },
+                ],
+              }),
+            onApprove: async (_data: unknown, actions: { order: { capture: () => Promise<{ id: string }> } }) => {
+              const details = await actions.order.capture();
+              setPaypalOrderId(details.id);
+              setPaypalStatus('success');
+            },
+            onError: () => {
+              setPaypalStatus('error');
+              setPaypalError('paypal-runtime-error');
+            },
+          })
+          .render(paypalRef.current)
+          .then(() => setPaypalStatus('ready'))
+          .catch(() => {
+            setPaypalStatus('error');
+            setPaypalError('paypal-render-failed');
+          });
+      })
+      .catch((e: Error) => {
+        setPaypalStatus('error');
+        setPaypalError(e.message);
+      });
+  }, [selectedMethod]);
 
   const handleCopyPix = () => {
     navigator.clipboard.writeText(PIX_KEY).then(() => {
@@ -69,7 +152,7 @@ export default function CheckoutPage({ onNavigate }: CheckoutPageProps) {
           <div className="space-y-4">
             <div
               className="rounded-2xl overflow-hidden"
-              style={{ background: 'linear-gradient(135deg, #160f2e, #1e1540)', border: '2px solid #7c3aed40' }}
+              style={{ background: 'linear-gradient(135deg, #160f2e, #1e1540)', border: '2px solid #a855f740' }}
             >
               <div className="bg-gradient-to-r from-brand-500 to-brand-600 px-6 py-3 flex items-center justify-between">
                 <span className="text-white font-black text-sm uppercase tracking-wide">{t('checkout.orderSummary')}</span>
@@ -146,7 +229,7 @@ export default function CheckoutPage({ onNavigate }: CheckoutPageProps) {
                       className="rounded-xl p-3 text-center transition-all duration-200 border-2"
                       style={
                         selectedMethod === m.id
-                          ? { backgroundColor: '#7c3aed15', borderColor: '#7c3aed', color: '#fff' }
+                          ? { backgroundColor: '#a855f715', borderColor: '#a855f7', color: '#fff' }
                           : { backgroundColor: '#1e1540', borderColor: '#2a1f5c', color: '#9ca3af' }
                       }
                     >
@@ -256,34 +339,52 @@ export default function CheckoutPage({ onNavigate }: CheckoutPageProps) {
                     <div className="text-center">
                       <div className="text-4xl mb-3">{'\u{1F17F}'}</div>
                       <p className="text-white font-black text-lg mb-1">{t('checkout.paypalTitle')}</p>
-                      <p className="text-gray-400 text-sm">
-                        {t('checkout.paypalDesc2')}
-                      </p>
+                      <p className="text-gray-400 text-sm">{t('checkout.paypalDesc2')}</p>
                     </div>
 
-                    <div className="bg-[#1e1540] rounded-xl p-4 border border-[#2a1f5c] space-y-3">
-                      <div>
-                        <label className="text-gray-400 text-xs font-semibold block mb-1.5">{t('checkout.paypalEmail')}</label>
-                        <input
-                          type="email"
-                          value={paypalEmail}
-                          onChange={(e) => setPaypalEmail(e.target.value)}
-                          placeholder={t('account.emailPlaceholder')}
-                          className="w-full bg-[#0f0a1e] border border-[#2a1f5c] text-white placeholder-gray-600 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-500 transition-colors"
-                        />
+                    <div className="bg-[#1e1540] rounded-xl p-4 border border-[#2a1f5c]">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-gray-400 text-xs">{t('checkout.total')}</span>
+                        <span className="text-white font-black text-lg">${CHECKOUT_PRICE} USD</span>
                       </div>
+
+                      {paypalStatus === 'success' && paypalOrderId && (
+                        <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 mb-3">
+                          <div className="flex items-center gap-2 mb-1">
+                            <CheckCircle2 className="w-4 h-4 text-green-400" />
+                            <p className="text-green-400 font-bold text-sm">Payment captured</p>
+                          </div>
+                          <p className="text-green-300 text-xs">Order ID: <code className="font-mono">{paypalOrderId}</code></p>
+                        </div>
+                      )}
+
+                      {paypalStatus === 'error' && (
+                        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-3 flex items-start gap-2">
+                          <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-red-400 font-bold text-xs mb-1">PayPal unavailable</p>
+                            <p className="text-red-300 text-xs">
+                              {paypalError === 'paypal-not-configured'
+                                ? 'PayPal Client ID is not configured.'
+                                : 'Could not load PayPal. Please try again.'}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {paypalStatus === 'loading' && (
+                        <div className="flex items-center justify-center py-8">
+                          <span className="w-6 h-6 border-2 border-brand-500/30 border-t-brand-500 rounded-full animate-spin" />
+                        </div>
+                      )}
+
+                      <div ref={paypalRef} className="paypal-button-host" />
                     </div>
 
-                    <div className="bg-blue-900/20 border border-blue-700/30 rounded-xl p-4">
-                      <p className="text-blue-300 text-xs leading-relaxed">
-                        {t('checkout.paypalRedirect')}
-                      </p>
+                    <div className="flex items-center gap-2 text-gray-500 text-xs">
+                      <Shield className="w-3.5 h-3.5 text-green-400" />
+                      <span>{t('checkout.paypalRedirect')}</span>
                     </div>
-
-                    <button className="w-full bg-[#0070ba] hover:bg-[#005ea6] text-white font-black py-4 rounded-xl transition-all hover:scale-105 flex items-center justify-center gap-2 text-lg">
-                      <span className="text-xl">{'\u{1F17F}'}</span>
-                      {t('checkout.paypalButton')}
-                    </button>
                   </div>
                 )}
 
@@ -294,72 +395,28 @@ export default function CheckoutPage({ onNavigate }: CheckoutPageProps) {
                       <p className="text-gray-400 text-xs">{t('checkout.stripeCards')}</p>
                     </div>
 
-                    <div className="space-y-3">
-                      <div>
-                        <label className="text-gray-400 text-xs font-semibold block mb-1.5">{t('checkout.stripeName')}</label>
-                        <input
-                          type="text"
-                          value={stripeForm.name}
-                          onChange={(e) => setStripeForm({ ...stripeForm, name: e.target.value })}
-                          placeholder="John Smith"
-                          className="w-full bg-[#1e1540] border border-[#2a1f5c] text-white placeholder-gray-600 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-500 transition-colors"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-gray-400 text-xs font-semibold block mb-1.5">{t('checkout.stripeEmail')}</label>
-                        <input
-                          type="email"
-                          value={stripeForm.email}
-                          onChange={(e) => setStripeForm({ ...stripeForm, email: e.target.value })}
-                          placeholder={t('account.emailPlaceholder')}
-                          className="w-full bg-[#1e1540] border border-[#2a1f5c] text-white placeholder-gray-600 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-500 transition-colors"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-gray-400 text-xs font-semibold block mb-1.5">{t('checkout.stripeCard')}</label>
-                        <input
-                          type="text"
-                          value={stripeForm.card}
-                          onChange={(e) => setStripeForm({ ...stripeForm, card: e.target.value })}
-                          placeholder="1234 5678 9012 3456"
-                          maxLength={19}
-                          className="w-full bg-[#1e1540] border border-[#2a1f5c] text-white placeholder-gray-600 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-500 transition-colors"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-gray-400 text-xs font-semibold block mb-1.5">{t('checkout.stripeExpiry')}</label>
-                          <input
-                            type="text"
-                            value={stripeForm.expiry}
-                            onChange={(e) => setStripeForm({ ...stripeForm, expiry: e.target.value })}
-                            placeholder="MM / YY"
-                            maxLength={7}
-                            className="w-full bg-[#1e1540] border border-[#2a1f5c] text-white placeholder-gray-600 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-500 transition-colors"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-gray-400 text-xs font-semibold block mb-1.5">{t('checkout.stripeCvv')}</label>
-                          <input
-                            type="text"
-                            value={stripeForm.cvv}
-                            onChange={(e) => setStripeForm({ ...stripeForm, cvv: e.target.value })}
-                            placeholder="123"
-                            maxLength={4}
-                            className="w-full bg-[#1e1540] border border-[#2a1f5c] text-white placeholder-gray-600 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-500 transition-colors"
-                          />
-                        </div>
+                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 flex items-start gap-3">
+                      <AlertCircle className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                      <div className="text-xs text-blue-200 leading-relaxed">
+                        <p className="font-bold mb-1">Stripe checkout requires server-side keys.</p>
+                        <p>To activate Stripe payments securely, click the button below to finish the official Stripe setup. After that, this section will be wired up automatically.</p>
                       </div>
                     </div>
+
+                    <a
+                      href="https://bolt.new/setup/stripe"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-black py-4 rounded-xl transition-all hover:scale-105 text-base"
+                    >
+                      <span>Configure Stripe</span>
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
 
                     <div className="flex items-center gap-2 text-gray-500 text-xs">
                       <Shield className="w-3.5 h-3.5 text-green-400" />
                       <span>{t('checkout.stripeSecured')}</span>
                     </div>
-
-                    <button className="w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-black py-4 rounded-xl transition-all hover:scale-105 text-lg">
-                      {t('checkout.stripeButton')}
-                    </button>
                   </div>
                 )}
               </div>

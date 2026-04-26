@@ -89,9 +89,11 @@ function AppInner() {
         } else {
           handleNavigate('dashboard');
         }
+      } else if (profile.is_admin && currentPage === 'dashboard') {
+        handleNavigate('admin');
       }
     }
-  }, [user, profile, loading]);
+  }, [user, profile, loading, currentPage]);
 
   const selectedTool = selectedToolId ? tools.find((t) => t.id === selectedToolId) : null;
 

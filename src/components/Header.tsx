@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Menu, X, Zap, LogOut, LayoutDashboard, Globe } from 'lucide-react';
+import { Menu, X, LogOut, LayoutDashboard, Globe } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { Profile } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -55,14 +55,14 @@ export default function Header({ currentPage, onNavigate, user, profile, onSignO
         <div className="flex items-center justify-between h-16">
           <button
             onClick={() => onNavigate('home')}
-            className="flex items-center gap-2 group"
+            className="flex items-center group"
+            aria-label="DesignActiv Home"
           >
-            <div className="w-9 h-9 bg-gradient-to-br from-brand-500 to-brand-700 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-brand-500/40 transition-shadow">
-              <Zap className="w-5 h-5 text-white" fill="white" />
-            </div>
-            <span className="text-white font-black text-lg tracking-tight">
-              design<span className="text-brand-500">activ</span>
-            </span>
+            <img
+              src="/design-activ-5-300x121.png"
+              alt="DesignActiv"
+              className="h-9 w-auto bg-white rounded-lg px-2 py-1 group-hover:scale-105 transition-transform"
+            />
           </button>
 
           <nav className="hidden md:flex items-center gap-7">

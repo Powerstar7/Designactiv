@@ -112,15 +112,13 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
   return (
     <div className="min-h-screen bg-[#080515] flex">
       <aside className="w-64 bg-[#0f0a1e] border-r border-[#2a1f5c] flex flex-col fixed h-full z-10">
-        <div className="p-6 border-b border-[#2a1f5c]">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-9 h-9 bg-brand-500/20 border border-brand-500/40 rounded-xl flex items-center justify-center">
-              <Shield className="w-5 h-5 text-brand-400" />
-            </div>
-            <div>
-              <p className="text-white font-black text-sm">{t('nav.adminPanel')}</p>
-              <p className="text-gray-600 text-xs">DesignActiv</p>
-            </div>
+        <div className="p-5 border-b border-[#2a1f5c]">
+          <div className="bg-white rounded-xl p-2 mb-3 flex items-center justify-center">
+            <img src="/design-activ-5-300x121.png" alt="DesignActiv" className="h-8 w-auto" />
+          </div>
+          <div className="flex items-center gap-2 px-1">
+            <Shield className="w-3.5 h-3.5 text-brand-400" />
+            <p className="text-brand-400 font-bold text-xs uppercase tracking-wider">{t('nav.adminPanel')}</p>
           </div>
         </div>
 
