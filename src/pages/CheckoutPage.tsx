@@ -1,10 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Check, Shield, Gift, Copy, CheckCircle2, Zap, ArrowLeft, ExternalLink, AlertCircle } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
-
-interface CheckoutPageProps {
-  onNavigate: (page: string) => void;
-}
 
 declare global {
   interface Window {
@@ -58,7 +55,13 @@ const PIX_KEY = '00819975745';
 
 type PayMethod = 'pix' | 'paypal' | 'stripe';
 
-export default function CheckoutPage({ onNavigate }: CheckoutPageProps) {
+export function CheckoutPage() {
+  const navigate = useNavigate();
+  const onNavigate = (page: string) => {
+    if (page === 'home') navigate('/');
+    else if (page === 'shop') navigate('/');
+    else navigate(`/${page}`);
+  };
   const [selectedMethod, setSelectedMethod] = useState<PayMethod>('pix');
   const [copied, setCopied] = useState(false);
   const [paypalStatus, setPaypalStatus] = useState<'idle' | 'loading' | 'ready' | 'error' | 'success'>('idle');
@@ -427,3 +430,6 @@ export default function CheckoutPage({ onNavigate }: CheckoutPageProps) {
     </div>
   );
 }
+
+
+export default CheckoutPage;

@@ -1,121 +1,144 @@
-import React, { useState } from 'react';
-import { Check, Loader2 } from 'lucide-react';
-import { stripeProducts } from '../stripe-config';
-import { useAuth } from '../context/AuthContext';
+import { Check, Star, Zap, Gift, Shield } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
+
+const powerfulApps = [
+  '1-Click Background Remover',
+  'All-In-One Design & Mockup Tool',
+  'Animated Ad Builder',
+  'Logo Creator',
+  'Smart Object Remover',
+  'Advanced Image Editor',
+];
+
+const bonusApps = ['Video Survey Pro', '3D Live Motion Photos', 'Image to SVG Converter'];
 
 export function PricingSection() {
-  const { user } = useAuth();
-  const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { t } = useLanguage();
 
-  const handleCheckout = async (priceId: string) => {
-    if (!user) {
-      alert('Por favor, faça login para continuar');
-      return;
-    }
-
-    setLoadingPriceId(priceId);
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          priceId,
-          successUrl: `${window.location.origin}/success`,
-          cancelUrl: `${window.location.origin}/pricing`,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error('Failed to create checkout session');
-      }
-    } catch (error) {
-      console.error('Checkout error:', error);
-      alert('Erro ao processar pagamento. Tente novamente.');
-    } finally {
-      setLoadingPriceId(null);
-    }
-  };
+  const includedFeatures = [
+    t('pricing.allTools'),
+    t('pricing.unlimited'),
+    t('pricing.commercial'),
+    t('pricing.cloud'),
+    t('pricing.support'),
+    t('pricing.templates'),
+    t('pricing.agency'),
+  ];
 
   return (
-    <section className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Escolha Seu Plano
+    <section className="py-20 bg-[#0f0a1e] relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-brand-700/10 rounded-full blur-3xl" />
+      </div>
+
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 bg-brand-500/10 border border-brand-500/30 rounded-full px-5 py-2 mb-5">
+            <Star className="w-4 h-4 text-brand-400" fill="currentColor" />
+            <span className="text-brand-400 text-sm font-bold">{t('pricing.badge')}</span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">
+            {t('pricing.title')}{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-brand-600">
+              {t('pricing.titleHighlight')}
+            </span>{' '}
+            {t('pricing.title2')}
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Acesse todas as ferramentas profissionais de design com preços acessíveis
-          </p>
+          <p className="text-gray-400 text-lg max-w-2xl mx-auto">{t('pricing.subtitle')}</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {stripeProducts.map((product) => (
-            <div
-              key={product.id}
-              className="bg-white rounded-2xl shadow-xl p-8 relative border-2 border-transparent hover:border-blue-500 transition-all duration-300"
-            >
-              <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  {product.name}
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  {product.description}
+        <div
+          className="rounded-3xl overflow-hidden shadow-2xl shadow-brand-500/20"
+          style={{ background: 'linear-gradient(135deg, #160f2e 0%, #1e1540 100%)', border: '2px solid rgba(168, 85, 247, 0.4)' }}
+        >
+          <div className="bg-gradient-to-r from-brand-500 to-brand-700 px-6 py-3 text-center">
+            <span className="text-white font-black text-sm uppercase tracking-widest">
+              {t('pricing.packTitle')}
+            </span>
+          </div>
+
+          <div className="p-8 md:p-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-gray-400 text-2xl font-bold">$</span>
+                  <span className="text-white text-7xl font-black leading-none">49</span>
+                  <div className="ml-2">
+                    <p className="text-gray-500 text-xs">/</p>
+                    <p className="text-gray-400 text-sm font-medium">{t('pricing.lifetimeAccess')}</p>
+                  </div>
+                </div>
+
+                <p className="text-gray-500 text-xs uppercase tracking-wider font-bold mt-6 mb-4">
+                  {t('pricing.whatsIncluded')}
                 </p>
-                <div className="mb-6">
-                  <span className="text-5xl font-bold text-gray-900">
-                    {product.currencySymbol}{product.price}
-                  </span>
-                  <span className="text-gray-600 ml-2">
-                    {product.mode === 'subscription' ? '/mês' : 'pagamento único'}
-                  </span>
+                <ul className="space-y-2.5">
+                  {includedFeatures.map((item) => (
+                    <li key={item} className="flex items-start gap-2.5">
+                      <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                      <span className="text-white text-sm font-semibold">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  onClick={() => navigate('/checkout')}
+                  className="mt-8 w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-black py-4 rounded-xl transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-brand-500/40 text-base"
+                >
+                  {t('pricing.buyNow')}
+                </button>
+
+                <div className="flex items-center justify-center gap-2 mt-4 text-gray-500 text-xs">
+                  <Shield className="w-3.5 h-3.5 text-green-400" />
+                  <span>{t('pricing.moneyBack')}</span>
                 </div>
               </div>
 
-              <div className="space-y-4 mb-8">
-                <div className="flex items-center">
-                  <Check className="w-5 h-5 text-green-500 mr-3" />
-                  <span className="text-gray-700">Acesso a todas as ferramentas</span>
+              <div className="space-y-5">
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Zap className="w-4 h-4 text-brand-400" fill="currentColor" />
+                    <p className="text-white font-black text-sm uppercase tracking-wide">
+                      {t('pricing.powerfulApps')}
+                    </p>
+                  </div>
+                  <ul className="space-y-2">
+                    {powerfulApps.map((app) => (
+                      <li key={app} className="flex items-center gap-2.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-brand-400 flex-shrink-0" />
+                        <span className="text-gray-200 text-sm">{app}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="flex items-center">
-                  <Check className="w-5 h-5 text-green-500 mr-3" />
-                  <span className="text-gray-700">Licença comercial incluída</span>
-                </div>
-                <div className="flex items-center">
-                  <Check className="w-5 h-5 text-green-500 mr-3" />
-                  <span className="text-gray-700">Suporte técnico</span>
-                </div>
-                <div className="flex items-center">
-                  <Check className="w-5 h-5 text-green-500 mr-3" />
-                  <span className="text-gray-700">Atualizações gratuitas</span>
+
+                <div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Gift className="w-4 h-4 text-green-400" />
+                    <p className="text-green-400 font-black text-sm uppercase tracking-wide">
+                      {t('pricing.bonusApps')}
+                    </p>
+                  </div>
+                  <ul className="space-y-2 mb-3">
+                    {bonusApps.map((app) => (
+                      <li key={app} className="flex items-center gap-2.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
+                        <span className="text-green-100 text-sm">{app}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-green-300 text-xs font-medium">{t('pricing.bonusNote')}</p>
                 </div>
               </div>
-
-              <button
-                onClick={() => handleCheckout(product.priceId)}
-                disabled={loadingPriceId === product.priceId}
-                className="w-full bg-blue-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              >
-                {loadingPriceId === product.priceId ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Processando...
-                  </>
-                ) : (
-                  'Comprar Agora'
-                )}
-              </button>
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </section>
   );
 }
+
+export default PricingSection;
