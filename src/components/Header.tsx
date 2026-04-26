@@ -4,6 +4,7 @@ import { User } from '@supabase/supabase-js';
 import { Profile } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage, Lang } from '../context/LanguageContext';
+import { useSubscription } from '../hooks/useSubscription';
 
 interface HeaderProps {
   currentPage: string;
@@ -25,6 +26,7 @@ export default function Header({ currentPage, onNavigate, user, profile, onSignO
   const langRef = useRef<HTMLDivElement>(null);
   const { signOut } = useAuth();
   const { lang, setLang, t } = useLanguage();
+  const { activePlan } = useSubscription();
 
   const links = [
     { label: t('nav.home'), page: 'home' },
@@ -110,6 +112,11 @@ export default function Header({ currentPage, onNavigate, user, profile, onSignO
 
             {user ? (
               <div className="flex items-center gap-3">
+                {activePlan && (
+                  <span className="hidden sm:inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                    {activePlan}
+                  </span>
+                )}
                 {profile?.is_admin && (
                   <button
                     onClick={() => onNavigate('admin')}
@@ -133,14 +140,22 @@ export default function Header({ currentPage, onNavigate, user, profile, onSignO
                 </div>
               </div>
             ) : (
-              <button
-                onClick={() => onNavigate('account')}
-                className={`nav-link text-sm font-medium transition-colors ${
-                  currentPage === 'account' ? 'text-brand-400' : 'text-gray-300 hover:text-white'
-                }`}
-              >
-                {t('nav.account')}
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => onNavigate('pricing')}
+                  className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
+                >
+                  Preços
+                </button>
+                <button
+                  onClick={() => onNavigate('account')}
+                  className={`nav-link text-sm font-medium transition-colors ${
+                    currentPage === 'account' ? 'text-brand-400' : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  {t('nav.account')}
+                </button>
+              </div>
             )}
           </nav>
 
@@ -185,8 +200,24 @@ export default function Header({ currentPage, onNavigate, user, profile, onSignO
               ))}
             </div>
 
+            {!user && (
+              <button
+                onClick={() => { onNavigate('pricing'); setMobileOpen(false); }}
+                className="block w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
+              >
+                Preços
+              </button>
+            )}
+
             {user ? (
               <>
+                {activePlan && (
+                  <div className="px-4 py-2.5">
+                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                      {activePlan}
+                    </span>
+                  </div>
+                )}
                 {profile?.is_admin && (
                   <button
                     onClick={() => { onNavigate('admin'); setMobileOpen(false); }}

@@ -10,6 +10,7 @@ interface HomePageProps {
   onToolSelect: (toolId: string) => void;
   onNavigate: (page: string) => void;
 }
+import { PricingSection } from '../components/PricingSection';
 
 export default function HomePage({ onToolSelect, onNavigate }: HomePageProps) {
   return (
@@ -21,6 +22,7 @@ export default function HomePage({ onToolSelect, onNavigate }: HomePageProps) {
       <AgencySection onNavigate={onNavigate} />
       <TestimonialsSection />
       <CTABanner onNavigate={onNavigate} />
+      <PricingSection />
     </>
   );
 }
