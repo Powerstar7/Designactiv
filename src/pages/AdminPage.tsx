@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Shield, Users, Video, LogOut, ChevronRight, Search, CheckCircle2, XCircle, CreditCard as Edit3, Save, X, RefreshCw, BarChart3, Eye, EyeOff, UserCheck, Key, TrendingUp, Home, Wrench, ExternalLink } from 'lucide-react';
 import { supabase, Profile, ToolVideo } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -6,13 +7,15 @@ import { tools } from '../data/tools';
 import { useLanguage } from '../context/LanguageContext';
 import UserCredentialsPanel from '../components/UserCredentialsPanel';
 
-interface AdminPageProps {
-  onNavigate: (page: string) => void;
-}
-
 type AdminTab = 'overview' | 'users' | 'videos';
 
-export default function AdminPage({ onNavigate }: AdminPageProps) {
+export function AdminPage() {
+  const navigate = useNavigate();
+  const onNavigate = (page: string) => {
+    if (page === 'home') navigate('/');
+    else if (page === 'login' || page === 'account') navigate('/login');
+    else navigate(`/${page}`);
+  };
   const { profile, signOut } = useAuth();
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
@@ -554,3 +557,6 @@ export default function AdminPage({ onNavigate }: AdminPageProps) {
     </div>
   );
 }
+
+
+export default AdminPage;

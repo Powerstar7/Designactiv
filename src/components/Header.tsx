@@ -1,18 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, LogOut, LayoutDashboard, Globe } from 'lucide-react';
-import { User } from '@supabase/supabase-js';
-import { Profile } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage, Lang } from '../context/LanguageContext';
-import { useSubscription } from '../hooks/useSubscription';
-
-interface HeaderProps {
-  currentPage: string;
-  onNavigate: (page: string) => void;
-  user: User | null;
-  profile: Profile | null;
-  onSignOut: () => void;
-}
 
 const langOptions: { code: Lang; flag: string; label: string }[] = [
   { code: 'en', flag: '\u{1F1EC}\u{1F1E7}', label: 'EN' },
@@ -20,23 +10,26 @@ const langOptions: { code: Lang; flag: string; label: string }[] = [
   { code: 'es', flag: '\u{1F1EA}\u{1F1F8}', label: 'ES' },
 ];
 
-export default function Header({ currentPage, onNavigate, user, profile, onSignOut }: HeaderProps) {
+export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
-  const { signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const { lang, setLang, t } = useLanguage();
-  const { activePlan } = useSubscription();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const currentPath = location.pathname.replace(/^\//, '') || 'home';
 
   const links = [
-    { label: t('nav.home'), page: 'home' },
-    { label: t('nav.dashboard'), page: 'dashboard' },
-    { label: t('nav.shop'), page: 'shop' },
+    { label: t('nav.home'), path: '/' },
+    { label: t('nav.dashboard'), path: '/dashboard' },
+    { label: 'Pricing', path: '/pricing' },
   ];
 
   const handleSignOut = async () => {
     await signOut();
-    onSignOut();
+    navigate('/');
   };
 
   useEffect(() => {
@@ -51,12 +44,14 @@ export default function Header({ currentPage, onNavigate, user, profile, onSignO
 
   const currentFlag = langOptions.find((o) => o.code === lang)?.flag ?? '\u{1F1EC}\u{1F1E7}';
 
+  const isActive = (path: string) => location.pathname === path;
+
   return (
     <header className="bg-[#080515] border-b border-[#2a1f5c] sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <button
-            onClick={() => onNavigate('home')}
+            onClick={() => navigate('/')}
             className="flex items-center group"
             aria-label="DesignActiv Home"
           >
@@ -70,12 +65,10 @@ export default function Header({ currentPage, onNavigate, user, profile, onSignO
           <nav className="hidden md:flex items-center gap-7">
             {links.map((link) => (
               <button
-                key={link.page}
-                onClick={() => onNavigate(link.page)}
+                key={link.path}
+                onClick={() => navigate(link.path)}
                 className={`nav-link text-sm font-medium transition-colors ${
-                  currentPage === link.page
-                    ? 'text-brand-400'
-                    : 'text-gray-300 hover:text-white'
+                  isActive(link.path) ? 'text-brand-400' : 'text-gray-300 hover:text-white'
                 }`}
               >
                 {link.label}
@@ -112,18 +105,13 @@ export default function Header({ currentPage, onNavigate, user, profile, onSignO
 
             {user ? (
               <div className="flex items-center gap-3">
-                {activePlan && (
-                  <span className="hidden sm:inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                    {activePlan}
-                  </span>
-                )}
                 {profile?.is_admin && (
                   <button
-                    onClick={() => onNavigate('admin')}
+                    onClick={() => navigate('/admin')}
                     className="flex items-center gap-1.5 text-xs font-bold text-brand-400 bg-brand-500/10 border border-brand-500/30 px-3 py-1.5 rounded-full hover:bg-brand-500/20 transition-all"
                   >
                     <LayoutDashboard className="w-3 h-3" />
-                    {t('nav.admin')}
+                    Admin
                   </button>
                 )}
                 <div className="flex items-center gap-2">
@@ -133,29 +121,21 @@ export default function Header({ currentPage, onNavigate, user, profile, onSignO
                   <button
                     onClick={handleSignOut}
                     className="text-gray-500 hover:text-red-400 transition-colors p-1"
-                    title={t('nav.signOut')}
+                    title="Sign out"
                   >
                     <LogOut className="w-4 h-4" />
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => onNavigate('pricing')}
-                  className="text-gray-300 hover:text-white transition-colors text-sm font-medium"
-                >
-                  Preços
-                </button>
-                <button
-                  onClick={() => onNavigate('account')}
-                  className={`nav-link text-sm font-medium transition-colors ${
-                    currentPage === 'account' ? 'text-brand-400' : 'text-gray-300 hover:text-white'
-                  }`}
-                >
-                  {t('nav.account')}
-                </button>
-              </div>
+              <button
+                onClick={() => navigate('/login')}
+                className={`nav-link text-sm font-medium transition-colors ${
+                  currentPath === 'login' ? 'text-brand-400' : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                Sign In
+              </button>
             )}
           </nav>
 
@@ -171,10 +151,10 @@ export default function Header({ currentPage, onNavigate, user, profile, onSignO
           <div className="md:hidden border-t border-[#2a1f5c] py-4 space-y-1">
             {links.map((link) => (
               <button
-                key={link.page}
-                onClick={() => { onNavigate(link.page); setMobileOpen(false); }}
+                key={link.path}
+                onClick={() => { navigate(link.path); setMobileOpen(false); }}
                 className={`block w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  currentPage === link.page
+                  isActive(link.path)
                     ? 'bg-brand-500/10 text-brand-400'
                     : 'text-gray-300 hover:bg-white/5 hover:text-white'
                 }`}
@@ -200,49 +180,29 @@ export default function Header({ currentPage, onNavigate, user, profile, onSignO
               ))}
             </div>
 
-            {!user && (
-              <button
-                onClick={() => { onNavigate('pricing'); setMobileOpen(false); }}
-                className="block w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
-              >
-                Preços
-              </button>
-            )}
-
             {user ? (
               <>
-                {activePlan && (
-                  <div className="px-4 py-2.5">
-                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                      {activePlan}
-                    </span>
-                  </div>
-                )}
                 {profile?.is_admin && (
                   <button
-                    onClick={() => { onNavigate('admin'); setMobileOpen(false); }}
+                    onClick={() => { navigate('/admin'); setMobileOpen(false); }}
                     className="block w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-brand-400 hover:bg-brand-500/10 transition-colors"
                   >
-                    {t('nav.adminPanel')}
+                    Admin Panel
                   </button>
                 )}
                 <button
                   onClick={() => { handleSignOut(); setMobileOpen(false); }}
                   className="block w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors"
                 >
-                  {t('nav.signOut')}
+                  Sign out
                 </button>
               </>
             ) : (
               <button
-                onClick={() => { onNavigate('account'); setMobileOpen(false); }}
-                className={`block w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  currentPage === 'account'
-                    ? 'bg-brand-500/10 text-brand-400'
-                    : 'text-gray-300 hover:bg-white/5 hover:text-white'
-                }`}
+                onClick={() => { navigate('/login'); setMobileOpen(false); }}
+                className="block w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
               >
-                {t('nav.account')}
+                Sign In
               </button>
             )}
           </div>
@@ -251,3 +211,5 @@ export default function Header({ currentPage, onNavigate, user, profile, onSignO
     </header>
   );
 }
+
+export default Header;

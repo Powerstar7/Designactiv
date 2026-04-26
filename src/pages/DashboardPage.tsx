@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Play, BookOpen, Award, ChevronRight, Key, Copy, Check, ExternalLink, Eye, EyeOff, Lock } from 'lucide-react';
 import { tools, localizeTool } from '../data/tools';
 import ToolIcon from '../components/ToolIcon';
@@ -6,11 +7,9 @@ import { useLanguage } from '../context/LanguageContext';
 import { supabase, UserToolCredential } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
-interface DashboardPageProps {
-  onToolSelect: (toolId: string) => void;
-}
-
-export default function DashboardPage({ onToolSelect }: DashboardPageProps) {
+export function DashboardPage() {
+  const navigate = useNavigate();
+  const onToolSelect = (toolId: string) => navigate(`/tool/${toolId}`);
   const { t, lang } = useLanguage();
   const { user } = useAuth();
   const localizedTools = tools.map((x) => localizeTool(x, lang));
@@ -269,3 +268,6 @@ function CredRow({ label, value, isSecret, revealed, onToggleReveal, onCopy, cop
     </div>
   );
 }
+
+
+export default DashboardPage;
