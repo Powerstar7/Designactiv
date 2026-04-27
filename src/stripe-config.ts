@@ -9,25 +9,17 @@ export interface StripeProduct {
   mode: 'payment' | 'subscription';
 }
 
+const ENV_PRICE_ID = (import.meta.env.VITE_STRIPE_PRICE_ID as string | undefined) ?? '';
+
 export const stripeProducts: StripeProduct[] = [
   {
-    id: 'prod_L5JvWiarSUZqaa',
-    priceId: 'price_1KP9HVHfhBIMfl3soSGoGMyi',
-    name: 'Pacote Básico',
-    description: 'Acesso completo às ferramentas de design profissional',
-    price: 18.00,
-    currency: 'eur',
-    currencySymbol: '€',
-    mode: 'payment'
-  },
-  {
-    id: 'prod_L5Jtf3Xx3pvgZY',
-    priceId: 'price_1KP9FxHfhBIMfl3ssFIodkEm',
-    name: 'Pacote Premium',
-    description: 'Acesso premium com recursos avançados e suporte prioritário',
-    price: 18.00,
-    currency: 'eur',
-    currencySymbol: '€',
+    id: 'prod_designactiv_lifetime',
+    priceId: ENV_PRICE_ID || 'price_1KP9HVHfhBIMfl3soSGoGMyi',
+    name: '9 Apps All-in-one Design Pack',
+    description: 'Lifetime access to all DesignActiv tools',
+    price: 49.00,
+    currency: 'usd',
+    currencySymbol: '$',
     mode: 'payment'
   }
 ];

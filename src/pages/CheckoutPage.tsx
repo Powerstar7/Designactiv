@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Shield, Gift, Copy, CheckCircle2, Zap, ArrowLeft, ExternalLink, AlertCircle } from 'lucide-react';
+import { Check, Shield, Gift, Copy, CheckCircle2, Zap, ArrowLeft, AlertCircle, Loader2, CreditCard } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { supabase } from '../lib/supabase';
+import { stripeProducts } from '../stripe-config';
 
 declare global {
   interface Window {
@@ -64,6 +66,8 @@ export function CheckoutPage() {
   };
   const [selectedMethod, setSelectedMethod] = useState<PayMethod>('pix');
   const [copied, setCopied] = useState(false);
+  const [stripeLoading, setStripeLoading] = useState(false);
+  const [stripeError, setStripeError] = useState<string | null>(null);
   const [paypalStatus, setPaypalStatus] = useState<'idle' | 'loading' | 'ready' | 'error' | 'success'>('idle');
   const [paypalError, setPaypalError] = useState<string | null>(null);
   const [paypalOrderId, setPaypalOrderId] = useState<string | null>(null);
@@ -117,6 +121,44 @@ export function CheckoutPage() {
         setPaypalError(e.message);
       });
   }, [selectedMethod]);
+
+  const handleStripeCheckout = async () => {
+    setStripeError(null);
+    setStripeLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/login?redirect=/checkout');
+        return;
+      }
+      const product = stripeProducts[0];
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            price_id: product.priceId,
+            mode: product.mode,
+            success_url: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${window.location.origin}/checkout`,
+          }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        throw new Error(data.error || 'Failed to start Stripe checkout');
+      }
+      window.location.href = data.url;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Stripe checkout failed';
+      setStripeError(msg);
+      setStripeLoading(false);
+    }
+  };
 
   const handleCopyPix = () => {
     navigator.clipboard.writeText(PIX_KEY).then(() => {
@@ -398,23 +440,33 @@ export function CheckoutPage() {
                       <p className="text-gray-400 text-xs">{t('checkout.stripeCards')}</p>
                     </div>
 
-                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 flex items-start gap-3">
-                      <AlertCircle className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                      <div className="text-xs text-blue-200 leading-relaxed">
-                        <p className="font-bold mb-1">Stripe checkout requires server-side keys.</p>
-                        <p>To activate Stripe payments securely, click the button below to finish the official Stripe setup. After that, this section will be wired up automatically.</p>
+                    {stripeError && (
+                      <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-start gap-3">
+                        <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                        <div className="text-xs text-red-200 leading-relaxed">
+                          <p className="font-bold mb-1">Could not start Stripe checkout</p>
+                          <p>{stripeError}</p>
+                        </div>
                       </div>
-                    </div>
+                    )}
 
-                    <a
-                      href="https://bolt.new/setup/stripe"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-black py-4 rounded-xl transition-all hover:scale-105 text-base"
+                    <button
+                      onClick={handleStripeCheckout}
+                      disabled={stripeLoading}
+                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-4 rounded-xl transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-brand-500/30 text-base"
                     >
-                      <span>Configure Stripe</span>
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
+                      {stripeLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Iniciando checkout...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard className="w-4 h-4" />
+                          <span>Pagar com Cartão — $49</span>
+                        </>
+                      )}
+                    </button>
 
                     <div className="flex items-center gap-2 text-gray-500 text-xs">
                       <Shield className="w-3.5 h-3.5 text-green-400" />
