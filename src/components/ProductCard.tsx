@@ -1,45 +1,71 @@
-import { BookOpen } from 'lucide-react';
-import { Tool, localizeTool } from '../data/tools';
-import ToolIcon from './ToolIcon';
-import { useLanguage } from '../context/LanguageContext';
+import React, { useState } from 'react';
+import { Check, Loader2 } from 'lucide-react';
+import type { StripeProduct } from '../stripe-config';
 
 interface ProductCardProps {
-  tool: Tool;
-  onClick: () => void;
+  product: StripeProduct;
+  onPurchase: (priceId: string) => Promise<void>;
 }
 
-export default function ProductCard({ tool: baseTool, onClick }: ProductCardProps) {
-  const { t, lang } = useLanguage();
-  const tool = localizeTool(baseTool, lang);
+export function ProductCard({ product, onPurchase }: ProductCardProps) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handlePurchase = async () => {
+    setIsLoading(true);
+    try {
+      await onPurchase(product.priceId);
+    } catch (error) {
+      console.error('Purchase failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <button
-      onClick={onClick}
-      className="bg-white rounded-2xl p-6 text-left hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group border border-gray-100 hover:border-brand-200"
-    >
-      <div className="flex items-start gap-4 mb-4">
-        <div
-          className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform"
-          style={{ backgroundColor: tool.color + '20', border: `2px solid ${tool.color}40` }}
-        >
-          <ToolIcon iconName={tool.icon} size={28} color={tool.color} />
-        </div>
-        <div>
-          <h3 className="font-black text-gray-900 text-sm leading-tight uppercase tracking-tight">
-            {tool.name}
-          </h3>
-        </div>
-      </div>
-
-      <div className="border-t border-gray-100 pt-4 space-y-2">
-        <p className="text-gray-600 text-sm font-medium">{tool.subtitle}</p>
-        <div className="flex items-center gap-1.5">
-          <BookOpen className="w-3.5 h-3.5" style={{ color: tool.color }} />
-          <span className="text-sm font-semibold" style={{ color: tool.color }}>
-            {t('products.lessons')}: {tool.lessons}
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8 hover:shadow-xl transition-shadow duration-300">
+      <div className="text-center">
+        <h3 className="text-2xl font-bold text-gray-900 mb-4">{product.name}</h3>
+        <p className="text-gray-600 mb-6 leading-relaxed">{product.description}</p>
+        
+        <div className="mb-8">
+          <span className="text-4xl font-bold text-indigo-600">
+            {product.currencySymbol}{product.price}
           </span>
+          {product.mode === 'payment' && (
+            <span className="text-gray-500 ml-2">one-time</span>
+          )}
         </div>
+
+        <div className="space-y-3 mb-8">
+          <div className="flex items-center justify-center text-green-600">
+            <Check className="w-5 h-5 mr-2" />
+            <span>Lifetime access</span>
+          </div>
+          <div className="flex items-center justify-center text-green-600">
+            <Check className="w-5 h-5 mr-2" />
+            <span>All design tools included</span>
+          </div>
+          <div className="flex items-center justify-center text-green-600">
+            <Check className="w-5 h-5 mr-2" />
+            <span>No monthly fees</span>
+          </div>
+        </div>
+
+        <button
+          onClick={handlePurchase}
+          disabled={isLoading}
+          className="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-indigo-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            'Get Lifetime Access'
+          )}
+        </button>
       </div>
-    </button>
+    </div>
   );
 }

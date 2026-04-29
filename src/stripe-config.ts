@@ -9,14 +9,12 @@ export interface StripeProduct {
   mode: 'payment' | 'subscription';
 }
 
-const ENV_PRICE_ID = (import.meta.env.VITE_STRIPE_PRICE_ID as string | undefined) ?? '';
-
-export const stripeProducts: StripeProduct[] = [
+export const STRIPE_PRODUCTS: StripeProduct[] = [
   {
-    id: 'prod_designactiv_lifetime',
-    priceId: ENV_PRICE_ID || 'price_1KP9HVHfhBIMfl3soSGoGMyi',
+    id: 'prod_UPl7uD8rMKkhhv',
+    priceId: 'price_1TQvbhHfhBIMfl3suBOCxGSX',
     name: '9 Apps All-in-one Design Pack',
-    description: 'Lifetime access to all DesignActiv tools',
+    description: 'Lifetime access to all DesignActiv design tools',
     price: 49.00,
     currency: 'usd',
     currencySymbol: '$',
@@ -24,10 +22,10 @@ export const stripeProducts: StripeProduct[] = [
   }
 ];
 
-export const getProductByPriceId = (priceId: string): StripeProduct | undefined => {
-  return stripeProducts.find(product => product.priceId === priceId);
+export const getProductById = (id: string): StripeProduct | undefined => {
+  return STRIPE_PRODUCTS.find(product => product.id === id);
 };
 
-export const getProductById = (id: string): StripeProduct | undefined => {
-  return stripeProducts.find(product => product.id === id);
+export const getProductByPriceId = (priceId: string): StripeProduct | undefined => {
+  return STRIPE_PRODUCTS.find(product => product.priceId === priceId);
 };
