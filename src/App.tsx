@@ -11,7 +11,6 @@ import { ToolPage } from './pages/ToolPage';
 import { SuccessPage } from './pages/SuccessPage';
 import { AdminPage } from './pages/AdminPage';
 import { PricingPage } from './pages/PricingPage';
-import { SuccessPage } from './pages/SuccessPage';
 import { CheckoutPage } from './pages/CheckoutPage';
 import ShopPage from './pages/ShopPage';
 import PrivacyPage from './pages/PrivacyPage';
@@ -70,7 +69,6 @@ export default function App() {
               </Routes>
             </main>
             <Footer />
-            <Route path="/success" element={<SuccessPage />} />
           </div>
         </Router>
       </AuthProvider>
