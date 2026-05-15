@@ -1,5 +1,5 @@
 import { tools } from '../data/tools';
-import { ProductCard } from './ProductCard';
+import { ToolCard } from './ToolCard';
 import { useLanguage } from '../context/LanguageContext';
 
 interface ProductsSectionProps {
@@ -23,7 +23,7 @@ export default function ProductsSection({ onToolSelect }: ProductsSectionProps) 
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {tools.map((tool) => (
-            <ProductCard
+            <ToolCard
               key={tool.id}
               tool={tool}
               onClick={() => onToolSelect(tool.id)}

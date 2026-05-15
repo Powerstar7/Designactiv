@@ -1,5 +1,5 @@
 import { tools } from '../data/tools';
-import ProductCard from '../components/ProductCard';
+import { ToolCard } from '../components/ToolCard';
 import PricingSection from '../components/PricingSection';
 import CTABanner from '../components/CTABanner';
 import { Zap, Filter } from 'lucide-react';
@@ -41,7 +41,7 @@ export default function ShopPage({ onToolSelect, onNavigate }: ShopPageProps) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-16">
           {tools.map((tool) => (
-            <ProductCard
+            <ToolCard
               key={tool.id}
               tool={tool}
               onClick={() => onToolSelect(tool.id)}
