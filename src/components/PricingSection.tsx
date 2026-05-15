@@ -1,6 +1,8 @@
 import { Check, Star, Zap, Gift, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import { stripeProducts } from '../stripe-config';
+import { useCheckout } from '../hooks/useCheckout';
 
 const powerfulApps = [
   '1-Click Background Remover',
@@ -16,6 +18,12 @@ const bonusApps = ['Video Survey Pro', '3D Live Motion Photos', 'Image to SVG Co
 export function PricingSection() {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { createCheckoutSession, isLoading } = useCheckout();
+  const product = stripeProducts[0]; // Get the main product
+
+  const handlePurchase = async () => {
+    await createCheckoutSession(product.priceId);
+  };
 
   const includedFeatures = [
     t('pricing.allTools'),
@@ -65,7 +73,7 @@ export function PricingSection() {
               <div>
                 <div className="flex items-baseline gap-2 mb-1">
                   <span className="text-gray-400 text-2xl font-bold">$</span>
-                  <span className="text-white text-7xl font-black leading-none">49</span>
+                  <span className="text-white text-7xl font-black leading-none">{product.price}</span>
                   <div className="ml-2">
                     <p className="text-gray-500 text-xs">/</p>
                     <p className="text-gray-400 text-sm font-medium">{t('pricing.lifetimeAccess')}</p>
@@ -85,10 +93,11 @@ export function PricingSection() {
                 </ul>
 
                 <button
-                  onClick={() => navigate('/checkout')}
-                  className="mt-8 w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-black py-4 rounded-xl transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-brand-500/40 text-base"
+                  onClick={handlePurchase}
+                  disabled={isLoading}
+                  className="mt-8 w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-black py-4 rounded-xl transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-brand-500/40 text-base disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {t('pricing.buyNow')}
+                  {isLoading ? 'Processing...' : t('pricing.buyNow')}
                 </button>
 
                 <div className="flex items-center justify-center gap-2 mt-4 text-gray-500 text-xs">

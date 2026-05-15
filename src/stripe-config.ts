@@ -5,27 +5,21 @@ export interface StripeProduct {
   description: string;
   price: number;
   currency: string;
-  currencySymbol: string;
   mode: 'payment' | 'subscription';
 }
 
-export const STRIPE_PRODUCTS: StripeProduct[] = [
+export const stripeProducts: StripeProduct[] = [
   {
     id: 'prod_UPl7uD8rMKkhhv',
     priceId: 'price_1TQvbhHfhBIMfl3suBOCxGSX',
     name: '9 Apps All-in-one Design Pack',
     description: 'Lifetime access to all DesignActiv design tools',
     price: 49.00,
-    currency: 'usd',
-    currencySymbol: '$',
+    currency: 'USD',
     mode: 'payment'
   }
 ];
 
-export const getProductById = (id: string): StripeProduct | undefined => {
-  return STRIPE_PRODUCTS.find(product => product.id === id);
-};
-
 export const getProductByPriceId = (priceId: string): StripeProduct | undefined => {
-  return STRIPE_PRODUCTS.find(product => product.priceId === priceId);
+  return stripeProducts.find(product => product.priceId === priceId);
 };

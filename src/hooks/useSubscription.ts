@@ -1,39 +1,51 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../context/AuthContext';
-import { getProductByPriceId } from '../stripe-config';
+import { stripeProducts } from '../stripe-config';
 
 interface SubscriptionData {
-  subscription_status: string | null;
-  price_id: string | null;
-  current_period_start: number | null;
-  current_period_end: number | null;
-  cancel_at_period_end: boolean | null;
+  hasAccess: boolean;
+  planName: string | null;
+  status: string | null;
 }
 
 export function useSubscription() {
-  const { user } = useAuth();
-  const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
+  const [subscription, setSubscription] = useState<SubscriptionData>({
+    hasAccess: false,
+    planName: null,
+    status: null,
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      setSubscription(null);
-      setLoading(false);
-      return;
-    }
-
     const fetchSubscription = async () => {
       try {
-        const { data, error } = await supabase
-          .from('stripe_user_subscriptions')
-          .select('*')
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setLoading(false);
+          return;
+        }
+
+        // Check profile access
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('has_access')
+          .eq('id', user.id)
           .single();
 
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error fetching subscription:', error);
+        if (profile?.has_access) {
+          // User has access, get the product name
+          const product = stripeProducts[0];
+          setSubscription({
+            hasAccess: true,
+            planName: product.name,
+            status: 'active',
+          });
         } else {
-          setSubscription(data);
+          setSubscription({
+            hasAccess: false,
+            planName: null,
+            status: null,
+          });
         }
       } catch (error) {
         console.error('Error fetching subscription:', error);
@@ -43,23 +55,7 @@ export function useSubscription() {
     };
 
     fetchSubscription();
-  }, [user]);
+  }, []);
 
-  const getActivePlan = () => {
-    if (!subscription || !subscription.price_id) {
-      return null;
-    }
-
-    const product = getProductByPriceId(subscription.price_id);
-    return product ? product.name : 'Plano Ativo';
-  };
-
-  const isActive = subscription?.subscription_status === 'active';
-
-  return {
-    subscription,
-    loading,
-    isActive,
-    activePlan: getActivePlan(),
-  };
+  return { subscription, loading };
 }
