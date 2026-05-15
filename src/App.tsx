@@ -12,6 +12,7 @@ import { AdminPage } from './pages/AdminPage';
 import { PricingPage } from './pages/PricingPage';
 import { SuccessPage } from './pages/SuccessPage';
 import { CheckoutPage } from './pages/CheckoutPage';
+import ShopPage from './pages/ShopPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -38,6 +39,7 @@ export default function App() {
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/success" element={<SuccessPage />} />
                 <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/shop" element={<ShopPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />
                 <Route

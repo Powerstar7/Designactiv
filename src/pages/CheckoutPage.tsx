@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Shield, Gift, Copy, CheckCircle2, Zap, ArrowLeft, AlertCircle, Loader2, CreditCard } from 'lucide-react';
+import { Check, Shield, Gift, Copy, CheckCircle2, Zap, ArrowLeft, AlertCircle, Loader2, CreditCard, ExternalLink } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../lib/supabase';
 import { STRIPE_PRODUCTS } from '../stripe-config';

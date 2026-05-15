@@ -1,17 +1,21 @@
+import { useNavigate } from 'react-router-dom';
 import { tools } from '../data/tools';
 import { ToolCard } from '../components/ToolCard';
-import PricingSection from '../components/PricingSection';
+import { PricingSection } from '../components/PricingSection';
 import CTABanner from '../components/CTABanner';
 import { Zap, Filter } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
-interface ShopPageProps {
-  onToolSelect: (toolId: string) => void;
-  onNavigate: (page: string) => void;
-}
-
-export default function ShopPage({ onToolSelect, onNavigate }: ShopPageProps) {
+export default function ShopPage() {
+  const navigate = useNavigate();
   const { t } = useLanguage();
+  const onNavigate = (page: string) => {
+    if (page === 'home') navigate('/');
+    else if (page === 'pricing') navigate('/pricing');
+    else if (page === 'account' || page === 'login') navigate('/login');
+    else navigate(`/${page}`);
+  };
+  const onToolSelect = (toolId: string) => navigate(`/tool/${toolId}`);
 
   return (
     <div className="min-h-screen bg-[#0f0a1e]">
@@ -50,7 +54,7 @@ export default function ShopPage({ onToolSelect, onNavigate }: ShopPageProps) {
         </div>
       </div>
 
-      <PricingSection onNavigate={onNavigate} />
+      <PricingSection />
       <CTABanner onNavigate={onNavigate} />
     </div>
   );
