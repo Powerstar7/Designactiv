@@ -5,6 +5,7 @@ export interface StripeProduct {
   description: string;
   price: number;
   currency: string;
+  currencySymbol: string;
   mode: 'payment' | 'subscription';
 }
 
@@ -16,9 +17,12 @@ export const stripeProducts: StripeProduct[] = [
     description: 'Lifetime access to all DesignActiv design tools',
     price: 49.00,
     currency: 'USD',
+    currencySymbol: '$',
     mode: 'payment'
   }
 ];
+
+export const STRIPE_PRODUCTS = stripeProducts;
 
 export const getProductByPriceId = (priceId: string): StripeProduct | undefined => {
   return stripeProducts.find(product => product.priceId === priceId);
