@@ -1,5 +1,4 @@
 import { Check, Star, Zap, Gift, Shield } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { stripeProducts } from '../stripe-config';
 import { useCheckout } from '../hooks/useCheckout';
@@ -16,7 +15,6 @@ const powerfulApps = [
 const bonusApps = ['Video Survey Pro', '3D Live Motion Photos', 'Image to SVG Converter'];
 
 export function PricingSection() {
-  const navigate = useNavigate();
   const { t } = useLanguage();
   const { createCheckoutSession, isLoading } = useCheckout();
   const product = stripeProducts[0]; // Get the main product

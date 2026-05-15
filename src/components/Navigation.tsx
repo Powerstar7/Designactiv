@@ -1,7 +1,6 @@
-import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LogOut, User, CreditCard } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { SubscriptionStatus } from './SubscriptionStatus';
 
 export function Navigation() {

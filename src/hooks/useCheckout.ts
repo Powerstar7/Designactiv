@@ -1,38 +1,46 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { stripeProducts } from '../stripe-config';
 
 export function useCheckout() {
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const createCheckoutSession = async (priceId: string) => {
     try {
       setIsLoading(true);
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('User not authenticated');
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/login?redirect=/checkout');
+        return;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`, {
+      const product = stripeProducts.find(p => p.priceId === priceId);
+      const mode = product?.mode || 'payment';
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          priceId,
-          userId: user.id,
-          successUrl: `${window.location.origin}/success`,
-          cancelUrl: window.location.href,
+          price_id: priceId,
+          mode,
+          success_url: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: window.location.href,
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to create checkout session');
+      const data = await response.json();
+
+      if (!response.ok || !data.url) {
+        throw new Error(data.error || 'Failed to create checkout session');
       }
 
-      const { url } = await response.json();
-      window.location.href = url;
+      window.location.href = data.url;
     } catch (error) {
       console.error('Checkout error:', error);
       alert('Failed to start checkout process. Please try again.');
