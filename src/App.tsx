@@ -8,6 +8,7 @@ import { LoginPage } from './pages/LoginPage';
 import { SignUpPage } from './pages/SignUpPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ToolPage } from './pages/ToolPage';
+import { SuccessPage } from './pages/SuccessPage';
 import { AdminPage } from './pages/AdminPage';
 import { PricingPage } from './pages/PricingPage';
 import { SuccessPage } from './pages/SuccessPage';
@@ -69,6 +70,7 @@ export default function App() {
               </Routes>
             </main>
             <Footer />
+            <Route path="/success" element={<SuccessPage />} />
           </div>
         </Router>
       </AuthProvider>

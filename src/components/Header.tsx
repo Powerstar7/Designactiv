@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, LogOut, LayoutDashboard, Globe } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useSubscription } from '../hooks/useSubscription';
 import { useLanguage, Lang } from '../context/LanguageContext';
 
 const langOptions: { code: Lang; flag: string; label: string }[] = [
@@ -15,6 +16,7 @@ export function Header() {
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
   const { user, profile, signOut } = useAuth();
+  const { subscription } = useSubscription();
   const { lang, setLang, t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
@@ -105,6 +107,11 @@ export function Header() {
 
             {user ? (
               <div className="flex items-center gap-3">
+                {subscription.hasAccess && subscription.planName && (
+                  <span className="hidden md:inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    {subscription.planName}
+                  </span>
+                )}
                 {profile?.is_admin && (
                   <button
                     onClick={() => navigate('/admin')}
