@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Check, Shield, Gift, Copy, CheckCircle2, Zap, ArrowLeft, AlertCircle, Loader2, CreditCard } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../lib/supabase';
-import { stripeProducts } from '../stripe-config';
+import { STRIPE_PRODUCTS } from '../stripe-config';
 
 declare global {
   interface Window {
@@ -131,7 +131,7 @@ export function CheckoutPage() {
         navigate('/login?redirect=/checkout');
         return;
       }
-      const product = stripeProducts[0];
+      const product = STRIPE_PRODUCTS[0];
       const res = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`,
         {

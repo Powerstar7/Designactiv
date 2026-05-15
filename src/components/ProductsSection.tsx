@@ -1,5 +1,5 @@
 import { tools } from '../data/tools';
-import ProductCard from './ProductCard';
+import { ProductCard } from './ProductCard';
 import { useLanguage } from '../context/LanguageContext';
 
 interface ProductsSectionProps {
