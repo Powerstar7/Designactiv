@@ -6,9 +6,9 @@ import ToolIcon from '../components/ToolIcon';
 import { useLanguage } from '../context/LanguageContext';
 import { supabase, UserToolCredential } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import UserSubscriptionStatus from '../components/UserSubscriptionStatus';
 
 export function DashboardPage() {
-import UserSubscriptionStatus from '../components/UserSubscriptionStatus';
   const navigate = useNavigate();
   const onToolSelect = (toolId: string) => navigate(`/tool/${toolId}`);
   const { t, lang } = useLanguage();

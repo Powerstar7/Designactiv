@@ -1,41 +1,49 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Check, Star, Zap } from 'lucide-react';
 import { stripeProducts } from '../stripe-config';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { supabase } from '../lib/supabase';
 
-const PricingSection: React.FC = () => {
+export function PricingSection() {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { t } = useLanguage();
 
   const handleCheckout = async () => {
     if (!user) {
-      // Redirect to login
-      window.location.href = '/login';
+      window.location.href = '/login?redirect=/shop';
       return;
     }
 
     setIsLoading(true);
-    
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`, {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.href = '/login?redirect=/shop';
+        return;
+      }
+
+      const product = stripeProducts[0];
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          priceId: stripeProducts[0].priceId,
-          successUrl: `${window.location.origin}/success`,
-          cancelUrl: `${window.location.origin}/pricing`,
+          price_id: product.priceId,
+          mode: product.mode || 'payment',
+          success_url: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: window.location.href,
         }),
       });
 
-      const { url } = await response.json();
-      
-      if (url) {
-        window.location.href = url;
+      const data = await response.json();
+
+      if (data.url) {
+        window.location.href = data.url;
       }
     } catch (error) {
       console.error('Checkout error:', error);
@@ -144,6 +152,4 @@ const PricingSection: React.FC = () => {
       </div>
     </section>
   );
-};
-
-export default PricingSection;
+}

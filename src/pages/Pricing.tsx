@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
-import { STRIPE_PRODUCTS } from '../stripe-config';
+import { stripeProducts } from '../stripe-config';
 
 export function Pricing() {
   const navigate = useNavigate();
@@ -48,7 +48,7 @@ export function Pricing() {
         </div>
 
         <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-1 max-w-md mx-auto">
-          {STRIPE_PRODUCTS.map((product) => (
+          {stripeProducts.map((product) => (
             <ProductCard
               key={product.id}
               product={product}
