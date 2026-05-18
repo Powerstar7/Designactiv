@@ -8,7 +8,7 @@ import { LoginPage } from './pages/LoginPage';
 import { SignUpPage } from './pages/SignUpPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ToolPage } from './pages/ToolPage';
-import { SuccessPage } from './pages/SuccessPage';
+import SuccessPage from './pages/SuccessPage';
 import { AdminPage } from './pages/AdminPage';
 import { PricingPage } from './pages/PricingPage';
 import { CheckoutPage } from './pages/CheckoutPage';

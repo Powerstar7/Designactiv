@@ -8,6 +8,7 @@ import { supabase, UserToolCredential } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
 export function DashboardPage() {
+import UserSubscriptionStatus from '../components/UserSubscriptionStatus';
   const navigate = useNavigate();
   const onToolSelect = (toolId: string) => navigate(`/tool/${toolId}`);
   const { t, lang } = useLanguage();
@@ -168,6 +169,8 @@ export function DashboardPage() {
         </div>
 
         <div className="mb-8">
+          <UserSubscriptionStatus />
+          
           <div className="flex items-center gap-2 mb-6">
             <Play className="w-5 h-5 text-brand-400" />
             <h2 className="text-xl font-black text-white">{t('dashboard.yourTools')}</h2>

@@ -1,117 +1,154 @@
 import React, { useEffect, useState } from 'react';
-import { Check, ArrowRight } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
-import { stripeProducts } from '../stripe-config';
+import { CheckCircle, ArrowRight, Download, Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
-export function SuccessPage() {
-  const [searchParams] = useSearchParams();
-  const [orderDetails, setOrderDetails] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  
-  const sessionId = searchParams.get('session_id');
+const SuccessPage: React.FC = () => {
+  const { user } = useAuth();
+  const { t } = useLanguage();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchOrderDetails = async () => {
-      if (!sessionId) {
-        setLoading(false);
-        return;
-      }
+    // Simulate loading time for payment confirmation
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
 
-      try {
-        const { data: orders } = await supabase
-          .from('stripe_user_orders')
-          .select('*')
-          .eq('checkout_session_id', sessionId)
-          .single();
+    return () => clearTimeout(timer);
+  }, []);
 
-        if (orders) {
-          setOrderDetails(orders);
-        }
-      } catch (error) {
-        console.error('Error fetching order details:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchOrderDetails();
-  }, [sessionId]);
-
-  const product = stripeProducts[0];
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">
+            {t('success.confirming', 'Confirming your payment...')}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8 text-center">
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Check className="w-10 h-10 text-green-600" />
-        </div>
-        
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Payment Successful!
-        </h1>
-        
-        <p className="text-lg text-gray-600 mb-8">
-          Thank you for your purchase. You now have lifetime access to all 9 premium design tools.
-        </p>
-
-        {loading ? (
-          <div className="bg-gray-50 rounded-lg p-6 mb-8">
-            <div className="animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
+            <CheckCircle className="w-12 h-12 text-green-600" />
           </div>
-        ) : orderDetails ? (
-          <div className="bg-gray-50 rounded-lg p-6 mb-8 text-left">
-            <h3 className="font-semibold text-gray-900 mb-4">Order Details</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Product:</span>
-                <span className="font-medium">{product.name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Amount:</span>
-                <span className="font-medium">
-                  ${(orderDetails.amount_total / 100).toFixed(2)} {orderDetails.currency.toUpperCase()}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Status:</span>
-                <span className="font-medium text-green-600 capitalize">{orderDetails.payment_status}</span>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-gray-50 rounded-lg p-6 mb-8">
-            <h3 className="font-semibold text-gray-900 mb-2">{product.name}</h3>
-            <p className="text-gray-600">{product.description}</p>
-          </div>
-        )}
-
-        <div className="space-y-4">
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center justify-center w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-          >
-            Access Your Tools
-            <ArrowRight className="w-5 h-5 ml-2" />
-          </Link>
           
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center w-full bg-gray-100 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
-          >
-            Back to Home
-          </Link>
-        </div>
-
-        <div className="mt-8 pt-6 border-t border-gray-200">
-          <p className="text-sm text-gray-500">
-            You will receive a confirmation email shortly. If you have any questions, please contact our support team.
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            {t('success.title', 'Payment Successful!')}
+          </h1>
+          
+          <p className="text-xl text-gray-600 mb-8">
+            {t('success.subtitle', 'Welcome to DesignActiv! Your account has been activated.')}
           </p>
+
+          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <Star className="w-6 h-6 text-yellow-500" />
+              <h2 className="text-2xl font-bold text-gray-900">
+                {t('success.package', '9 Apps All-in-one Design Pack')}
+              </h2>
+              <Star className="w-6 h-6 text-yellow-500" />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6 text-left">
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-3">
+                  {t('success.included', 'What\'s Included:')}
+                </h3>
+                <ul className="space-y-2 text-gray-600">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    Background Remover Tool
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    3D Motion Photos Creator
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    All-in-One Design Studio
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    Ad Banner Animator
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    Professional Logo Creator
+                  </li>
+                </ul>
+              </div>
+              
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-3">
+                  {t('success.moreTools', 'Plus More Tools:')}
+                </h3>
+                <ul className="space-y-2 text-gray-600">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    Smart Object Remover
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    Image to SVG Converter
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    Advanced Image Editor
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    Video Survey Creator
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 rounded-xl p-6 mb-8">
+            <h3 className="font-semibold text-gray-900 mb-2">
+              {t('success.nextSteps', 'What happens next?')}
+            </h3>
+            <p className="text-gray-600 mb-4">
+              {t('success.accessInfo', 'You now have lifetime access to all tools. Check your email for login credentials to each platform.')}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                to="/dashboard"
+                className="inline-flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <ArrowRight className="w-5 h-5" />
+                {t('success.goToDashboard', 'Go to Dashboard')}
+              </Link>
+              
+              <Link
+                to="/tools"
+                className="inline-flex items-center justify-center gap-2 bg-white text-blue-600 font-semibold py-3 px-6 rounded-lg border-2 border-blue-600 hover:bg-blue-50 transition-colors"
+              >
+                <Download className="w-5 h-5" />
+                {t('success.exploreTools', 'Explore Tools')}
+              </Link>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <p className="text-gray-600 mb-2">
+              {t('success.support', 'Need help getting started?')}
+            </p>
+            <p className="text-sm text-gray-500">
+              {t('success.contactInfo', 'Contact our support team at support@designactiv.com')}
+            </p>
+          </div>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default SuccessPage;
