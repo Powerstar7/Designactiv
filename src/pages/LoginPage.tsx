@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LoginForm } from '../components/auth/LoginForm';
 import { SignupForm } from '../components/auth/SignupForm';
 import { supabase } from '../lib/supabase';
 
-async function destinationForUser(userId: string): Promise<string> {
+async function destinationForUser(userId: string, redirect: string | null): Promise<string> {
+  if (redirect) return redirect;
   const { data } = await supabase
     .from('profiles')
     .select('is_admin')
@@ -16,17 +17,19 @@ async function destinationForUser(userId: string): Promise<string> {
 export function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get('redirect');
 
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) navigate(await destinationForUser(user.id), { replace: true });
+      if (user) navigate(await destinationForUser(user.id, redirect), { replace: true });
     })();
-  }, [navigate]);
+  }, [navigate, redirect]);
 
   const handleAuthSuccess = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (user) navigate(await destinationForUser(user.id), { replace: true });
+    if (user) navigate(await destinationForUser(user.id, redirect), { replace: true });
     else navigate('/');
   };
 

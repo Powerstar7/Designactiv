@@ -13,7 +13,7 @@ export function useCheckout() {
 
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        navigate('/login?redirect=/checkout');
+        navigate('/login?redirect=/shop');
         return;
       }
 
