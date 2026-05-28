@@ -5,6 +5,7 @@
 +import { SubscriptionStatus } from '../components/SubscriptionStatus';
  
  export function Dashboard() {
+ }
 @@ .. @@
    return (
      <div className="min-h-screen bg-gray-50 py-8">
@@ -15,3 +16,4 @@
 +        
          <div className="mb-8">
 @@ .. @@
+   )

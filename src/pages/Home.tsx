@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Palette, Layers, Zap } from 'lucide-react';
+import { ArrowRight, Palette, Layers, Zap, Crown } from 'lucide-react';
+import { stripeProducts } from '../stripe-config';
 
 export function Home() {
+  const product = stripeProducts[0];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       {/* Hero Section */}
@@ -19,10 +22,11 @@ export function Home() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/pricing"
-              className="bg-indigo-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-indigo-700 transition-colors duration-200 flex items-center justify-center"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center group"
             >
-              Get Lifetime Access
-              <ArrowRight className="w-5 h-5 ml-2" />
+              <Crown className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+              Get Lifetime Access - {product.currencySymbol}{product.price}
+              <ArrowRight className="ml-2 w-5 h-5" />
             </Link>
             <Link
               to="/register"
@@ -77,6 +81,36 @@ export function Home() {
           </div>
         </div>
       </div>
+
+      {/* Pricing Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            One-Time Payment, Lifetime Access
+          </h2>
+          <p className="text-xl text-gray-600 mb-12">
+            Everything you need for professional design work
+          </p>
+          
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 max-w-lg mx-auto">
+            <div className="flex items-center justify-center mb-4">
+              <Crown className="w-8 h-8 text-yellow-500 mr-2" />
+              <h3 className="text-2xl font-bold text-gray-900">{product.name}</h3>
+            </div>
+            <div className="text-4xl font-bold text-blue-600 mb-2">
+              {product.currencySymbol}{product.price}
+            </div>
+            <p className="text-gray-600 mb-6">{product.description}</p>
+            <Link
+              to="/pricing"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 inline-flex items-center"
+            >
+              Get Lifetime Access
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* CTA Section */}
       <div className="bg-indigo-600 py-16">
