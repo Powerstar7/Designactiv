@@ -6,6 +6,8 @@ import { Footer } from './components/Footer';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { SignUpPage } from './pages/SignUpPage';
+import { PricingPage } from './pages/PricingPage';
+import { SuccessPage } from './pages/SuccessPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ToolPage } from './pages/ToolPage';
 import SuccessPage from './pages/SuccessPage';
@@ -34,6 +36,8 @@ export default function App() {
             <main className="flex-1">
               <Routes>
                 <Route path="/" element={<HomePage />} />
+                <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/success" element={<SuccessPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignUpPage />} />
                 <Route path="/pricing" element={<PricingPage />} />

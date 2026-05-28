@@ -5,6 +5,7 @@ export interface StripeProduct {
   description: string;
   price: number;
   currency: string;
+  currencySymbol: string;
   mode: 'payment' | 'subscription';
 }
 
@@ -15,7 +16,8 @@ export const stripeProducts: StripeProduct[] = [
     name: '9 Apps All-in-one Design Pack',
     description: 'Lifetime access to all DesignActiv design tools',
     price: 49.00,
-    currency: 'USD',
+    currency: 'usd',
+    currencySymbol: '$',
     mode: 'payment'
   }
 ];
