@@ -4,6 +4,7 @@ import { Menu, X, LogOut, LayoutDashboard, Globe } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { useLanguage, Lang } from '../context/LanguageContext';
+import { SubscriptionStatus } from './SubscriptionStatus';
 
 const langOptions: { code: Lang; flag: string; label: string }[] = [
   { code: 'en', flag: '\u{1F1EC}\u{1F1E7}', label: 'EN' },
@@ -107,6 +108,9 @@ export function Header() {
 
             {user ? (
               <div className="flex items-center gap-3">
+                <div className="hidden lg:block">
+                  <SubscriptionStatus />
+                </div>
                 {subscription.hasAccess && subscription.planName && (
                   <span className="hidden md:inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                     {subscription.planName}
@@ -135,14 +139,22 @@ export function Header() {
                 </div>
               </div>
             ) : (
-              <button
-                onClick={() => navigate('/login')}
-                className={`nav-link text-sm font-medium transition-colors ${
-                  currentPath === 'login' ? 'text-brand-400' : 'text-gray-300 hover:text-white'
-                }`}
-              >
-                Sign In
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => navigate('/pricing')}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
+                >
+                  Get Access
+                </button>
+                <button
+                  onClick={() => navigate('/login')}
+                  className={`nav-link text-sm font-medium transition-colors ${
+                    currentPath === 'login' ? 'text-brand-400' : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  Sign In
+                </button>
+              </div>
             )}
           </nav>
 

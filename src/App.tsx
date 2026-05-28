@@ -15,6 +15,8 @@ import { CheckoutPage } from './pages/CheckoutPage';
 import ShopPage from './pages/ShopPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
+import { Pricing } from './pages/Pricing';
+import { Success } from './pages/Success';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
 
@@ -38,8 +40,8 @@ export default function App() {
                 <Route path="/success" element={<SuccessPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignUpPage />} />
-                <Route path="/pricing" element={<PricingPage />} />
-                <Route path="/success" element={<SuccessPage />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/success" element={<Success />} />
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/shop" element={<ShopPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
