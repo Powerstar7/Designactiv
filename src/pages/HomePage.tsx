@@ -9,12 +9,12 @@ import CTABanner from '../components/CTABanner';
 import FeaturesHighlight from '../components/FeaturesHighlight';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../context/LanguageContext';
 
 export function HomePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t } = useLanguage();
   
   const onNavigate = (page: string) => {
     if (page === 'home') navigate('/');
