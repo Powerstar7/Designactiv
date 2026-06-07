@@ -1,68 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { Crown, AlertCircle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../context/AuthContext';
+import React from 'react';
+import { Crown, CheckCircle } from 'lucide-react';
+import { useUserSubscription } from '../hooks/useUserSubscription';
+import { stripeProducts, getProductByPriceId } from '../stripe-config';
 
-interface UserSubscription {
-  subscription_status: string | null;
-  price_id: string | null;
-}
+export const SubscriptionStatus: React.FC = () => {
+  const { subscription, loading, hasActiveSubscription } = useUserSubscription();
 
-export function SubscriptionStatus() {
-  const { user } = useAuth();
-  const [subscription, setSubscription] = useState<UserSubscription | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
-    fetchSubscriptionStatus();
-  }, [user]);
-
-  const fetchSubscriptionStatus = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('stripe_user_subscriptions')
-        .select('subscription_status, price_id')
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching subscription:', error);
-        return;
-      }
-
-      setSubscription(data);
-    } catch (error) {
-      console.error('Error fetching subscription status:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!user || loading) {
-    return null;
-  }
-
-  // Check if user has active access (either through subscription or direct purchase)
-  const hasAccess = subscription?.subscription_status === 'active' || 
-                   subscription?.price_id === 'price_1TQvbhHfhBIMfl3suBOCxGSX';
-
-  if (hasAccess) {
+  if (loading) {
     return (
-      <div className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-100 to-amber-100 border border-yellow-200 px-3 py-1 rounded-full">
-        <Crown className="w-4 h-4 text-yellow-600" />
-        <span className="text-sm font-medium text-yellow-800">Premium Access</span>
-      </div>
+      <div className="animate-pulse bg-gray-200 h-8 w-48 rounded"></div>
     );
   }
 
+  if (!hasActiveSubscription) {
+    return null;
+  }
+
+  const product = subscription?.price_id 
+    ? getProductByPriceId(subscription.price_id)
+    : stripeProducts[0]; // Fallback to first product
+
   return (
-    <div className="inline-flex items-center gap-2 bg-gray-100 border border-gray-200 px-3 py-1 rounded-full">
-      <AlertCircle className="w-4 h-4 text-gray-500" />
-      <span className="text-sm font-medium text-gray-600">Free Access</span>
+    <div className="flex items-center space-x-2 bg-gradient-to-r from-yellow-50 to-orange-50 px-4 py-2 rounded-full border border-yellow-200">
+      <Crown className="w-5 h-5 text-yellow-600" />
+      <span className="text-sm font-medium text-yellow-800">
+        {product?.name || 'Premium Access'}
+      </span>
+      <CheckCircle className="w-4 h-4 text-green-600" />
     </div>
   );
-}
+};

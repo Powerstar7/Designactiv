@@ -1,43 +1,35 @@
-import { useAuth } from '../context/AuthContext';
+import { useState } from 'react';
+import { supabase } from '../lib/supabase';
 
-export function useStripeCheckout() {
-  const { user } = useAuth();
+export const useStripeCheckout = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const createCheckoutSession = async (priceId: string) => {
-    if (!user) {
-      throw new Error('User must be authenticated');
-    }
-
+  const createCheckout = async (priceId: string) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({
-          priceId,
-          userId: user.id,
-          userEmail: user.email,
-        }),
+      setLoading(true);
+      setError(null);
+
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to create checkout session');
-      }
+      if (error) throw error;
 
-      const { url } = await response.json();
-      
-      if (url) {
-        window.location.href = url;
+      if (data?.url) {
+        window.location.href = data.url;
       } else {
-        throw new Error('No checkout URL received');
+        throw new Error('No checkout URL returned');
       }
-    } catch (error) {
-      console.error('Checkout error:', error);
-      throw error;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      setLoading(false);
     }
   };
 
-  return { createCheckoutSession };
-}
+  return {
+    createCheckout,
+    loading,
+    error
+  };
+};
