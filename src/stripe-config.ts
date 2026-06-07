@@ -25,3 +25,7 @@ export const stripeProducts: StripeProduct[] = [
 export const getProductByPriceId = (priceId: string): StripeProduct | undefined => {
   return stripeProducts.find(product => product.priceId === priceId);
 };
+
+export const formatPrice = (price: number, currencySymbol: string): string => {
+  return `${currencySymbol}${price.toFixed(2)}`;
+};
