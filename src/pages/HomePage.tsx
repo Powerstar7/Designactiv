@@ -11,7 +11,8 @@ import FeaturesHighlight from '../components/FeaturesHighlight';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Users, Zap, Crown } from 'lucide-react';
 import { tools, useLocalizedTools } from '../data/tools';
-import { CheckoutButton } from '../components/CheckoutButton';
+import { ArrowRight, Zap, Shield, Globe } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { stripeProducts, formatPrice } from '../stripe-config';
 import { useLanguage } from '../context/LanguageContext';
 
