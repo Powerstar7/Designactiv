@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Hero from '../components/Hero';
@@ -8,13 +9,19 @@ import TestimonialsSection from '../components/TestimonialsSection';
 import CTABanner from '../components/CTABanner';
 import FeaturesHighlight from '../components/FeaturesHighlight';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Star, Users, Zap, Crown } from 'lucide-react';
+import { tools, useLocalizedTools } from '../data/tools';
+import { CheckoutButton } from '../components/CheckoutButton';
+import { stripeProducts, formatPrice } from '../stripe-config';
 import { useLanguage } from '../context/LanguageContext';
 
 export function HomePage() {
+  const [activeToolIndex, setActiveToolIndex] = useState(0);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
+  const localizedTools = useLocalizedTools(tools, lang);
+  const product = stripeProducts[0];
   
   const onNavigate = (page: string) => {
     if (page === 'home') navigate('/');

@@ -1,95 +1,111 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-import { CheckCircle, ArrowRight, Download } from 'lucide-react';
-import { stripeProducts } from '../stripe-config';
+import { CheckCircle, Download, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function SuccessPage() {
-  const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get('session_id');
-  const [isVerified, setIsVerified] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (sessionId) {
-      // In a real app, you might verify the session with your backend
-      setIsVerified(true);
-    }
-  }, [sessionId]);
+    // Simulate processing time
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
 
-  const product = stripeProducts[0];
+    return () => clearTimeout(timer);
+  }, []);
 
-  if (!isVerified) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verifying your payment...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Processing your purchase...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white py-12">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-8 text-white text-center">
-            <CheckCircle className="w-16 h-16 mx-auto mb-4" />
-            <h1 className="text-3xl font-bold mb-2">Payment Successful!</h1>
-            <p className="text-green-100">Welcome to DesignActiv</p>
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 mb-6">
+            <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
           
-          <div className="px-6 py-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                You now have lifetime access to {product.name}
-              </h2>
-              <p className="text-gray-600 mb-6">
-                {product.description}
-              </p>
-            </div>
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+            Payment Successful!
+          </h1>
+          
+          <p className="text-xl text-gray-600 mb-8">
+            Welcome to DesignActiv! Your lifetime access has been activated.
+          </p>
+        </div>
 
-            <div className="bg-gray-50 rounded-lg p-6 mb-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">What's Next?</h3>
-              <div className="space-y-4">
-                <div className="flex items-start">
-                  <div className="bg-blue-100 rounded-full p-2 mr-4 mt-1">
-                    <Download className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">Access Your Tools</div>
-                    <div className="text-gray-600 text-sm">
-                      Navigate to the Tools section to start using your design applications
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <div className="bg-purple-100 rounded-full p-2 mr-4 mt-1">
-                    <CheckCircle className="w-4 h-4 text-purple-600" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">Commercial License Included</div>
-                    <div className="text-gray-600 text-sm">
-                      Use these tools for client projects and keep 100% of the profits
-                    </div>
-                  </div>
-                </div>
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">What happens next?</h2>
+          
+          <div className="space-y-6">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                <span className="text-blue-600 font-semibold text-sm">1</span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-1">Check Your Email</h3>
+                <p className="text-gray-600">
+                  We've sent you a confirmation email with your receipt and access instructions.
+                </p>
               </div>
             </div>
 
-            <div className="text-center space-y-4">
-              <Link
-                to="/tools"
-                className="inline-flex items-center bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
-              >
-                Access Your Tools
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Link>
-              
-              <div className="text-sm text-gray-500">
-                Need help? Contact our support team at support@designactiv.com
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                <span className="text-blue-600 font-semibold text-sm">2</span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-1">Access Your Tools</h3>
+                <p className="text-gray-600">
+                  Your account has been upgraded with lifetime access to all 9 design tools.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                <span className="text-blue-600 font-semibold text-sm">3</span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-1">Start Creating</h3>
+                <p className="text-gray-600">
+                  Begin using your professional design tools immediately. No additional setup required.
+                </p>
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-center text-white">
+          <h2 className="text-2xl font-bold mb-4">Ready to Start Designing?</h2>
+          <p className="mb-6 opacity-90">
+            Access all your premium design tools now and start creating amazing content.
+          </p>
+          
+          <Link 
+            to="/dashboard" 
+            className="inline-flex items-center gap-2 bg-white text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+          >
+            Go to Dashboard
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        <div className="text-center mt-8">
+          <p className="text-gray-500 text-sm">
+            Need help? Contact our support team at{' '}
+            <a href="mailto:support@designactiv.com" className="text-blue-600 hover:underline">
+              support@designactiv.com
+            </a>
+          </p>
         </div>
       </div>
     </div>

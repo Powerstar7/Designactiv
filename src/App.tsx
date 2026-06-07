@@ -1,17 +1,17 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { CheckoutPage } from './pages/CheckoutPage';
+import { SuccessPage } from './pages/SuccessPage';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { SignUpPage } from './pages/SignUpPage';
 import { PricingPage } from './pages/PricingPage';
-import { SuccessPage } from './pages/SuccessPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ToolPage } from './pages/ToolPage';
 import { AdminPage } from './pages/AdminPage';
-import { CheckoutPage } from './pages/CheckoutPage';
 import ShopPage from './pages/ShopPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
@@ -36,13 +36,13 @@ export default function App() {
             <main className="flex-1">
               <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/success" element={<SuccessPage />} />
+                <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignUpPage />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/success" element={<Success />} />
-                <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/shop" element={<ShopPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />
