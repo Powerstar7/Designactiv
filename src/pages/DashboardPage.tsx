@@ -7,17 +7,21 @@ import { useLanguage } from '../context/LanguageContext';
 import { supabase, UserToolCredential } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import UserSubscriptionStatus from '../components/UserSubscriptionStatus';
+import { CheckoutButton } from '../components/CheckoutButton';
+import { stripeProducts, formatPrice } from '../stripe-config';
 
 export function DashboardPage() {
   const navigate = useNavigate();
   const onToolSelect = (toolId: string) => navigate(`/tool/${toolId}`);
   const { t, lang } = useLanguage();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const localizedTools = tools.map((x) => localizeTool(x, lang));
+  const product = stripeProducts[0];
   const [credentials, setCredentials] = useState<Record<string, UserToolCredential>>({});
   const [loadingCreds, setLoadingCreds] = useState(true);
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [hasAccess, setHasAccess] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -32,7 +36,28 @@ export function DashboardPage() {
       setCredentials(map);
       setLoadingCreds(false);
     })();
+    checkUserAccess();
   }, [user]);
+
+  const checkUserAccess = async () => {
+    if (!user) return;
+    
+    try {
+      const { data } = await supabase
+        .from('stripe_user_subscriptions')
+        .select('subscription_status, price_id')
+        .single();
+
+      const hasValidAccess = data?.subscription_status === 'active' || 
+                            data?.price_id === 'price_1TQvbhHfhBIMfl3suBOCxGSX' ||
+                            profile?.has_access;
+      
+      setHasAccess(hasValidAccess || false);
+    } catch (error) {
+      console.error('Error checking access:', error);
+      setHasAccess(profile?.has_access || false);
+    }
+  };
 
   const copy = async (key: string, value: string) => {
     try {
@@ -57,6 +82,47 @@ export function DashboardPage() {
     t('dashboard.step3'),
     t('dashboard.step4'),
   ];
+
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-yellow-100 mb-6">
+              <Lock className="w-10 h-10 text-yellow-600" />
+            </div>
+            
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">
+              Unlock All Design Tools
+            </h1>
+            
+            <p className="text-xl text-gray-600 mb-8">
+              Get lifetime access to all 9 professional design applications
+            </p>
+          </div>
+
+          <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">{product.name}</h2>
+              <div className="text-4xl font-bold text-blue-600 mb-2">
+                {formatPrice(product.price, product.currencySymbol)}
+              </div>
+              <p className="text-gray-600">{product.description}</p>
+            </div>
+
+            <CheckoutButton 
+              product={product}
+              className="w-full py-4 text-lg mb-6"
+            />
+
+            <p className="text-center text-sm text-gray-500">
+              Secure payment • Instant access • 30-day money-back guarantee
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0f0a1e] p-6">
