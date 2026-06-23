@@ -9,10 +9,8 @@ import TestimonialsSection from '../components/TestimonialsSection';
 import CTABanner from '../components/CTABanner';
 import FeaturesHighlight from '../components/FeaturesHighlight';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Star, Users, Zap, Crown } from 'lucide-react';
+import { ArrowRight, Star, Users, Zap, Crown, Shield, Globe } from 'lucide-react';
 import { tools, useLocalizedTools } from '../data/tools';
-import { ArrowRight, Zap, Shield, Globe } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { stripeProducts, formatPrice } from '../stripe-config';
 import { useLanguage } from '../context/LanguageContext';
 
