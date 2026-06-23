@@ -1,7 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import { PricingPage } from './pages/PricingPage';
-import { SuccessPage } from './pages/SuccessPage';
 import { LanguageProvider } from './context/LanguageContext';
 import { CheckoutPage } from './pages/CheckoutPage';
 import { SuccessPage } from './pages/SuccessPage';
@@ -71,8 +69,6 @@ export default function App() {
               </Routes>
             </main>
             <Footer />
-            <Route path="/pricing" element={<PricingPage />} />
-            <Route path="/success" element={<SuccessPage />} />
           </div>
         </Router>
       </AuthProvider>
