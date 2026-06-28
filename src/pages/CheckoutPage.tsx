@@ -1,56 +1,71 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Shield, Lock, CreditCard, Copy, Mail, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Shield, Lock, CreditCard, Copy, Mail } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { useLanguage } from '../context/LanguageContext';
 import { stripeProducts } from '../stripe-config';
-import { supabase } from '../lib/supabase';
 
 type PaymentMethod = 'pix' | 'paypal' | 'stripe';
+
+const PIX_KEY = '00819975745';
+
+function generatePixPayload(pixKey: string, amount: number, merchantName: string): string {
+  const formatField = (id: string, value: string) => {
+    return `${id}${value.length.toString().padStart(2, '0')}${value}`;
+  };
+
+  const merchantAccountInfo =
+    formatField('00', 'br.gov.bcb.pix') +
+    formatField('01', pixKey);
+
+  let payload =
+    formatField('00', '01') +
+    formatField('26', merchantAccountInfo) +
+    formatField('52', '0000') +
+    formatField('53', '986') +
+    formatField('54', amount.toFixed(2)) +
+    formatField('58', 'BR') +
+    formatField('59', merchantName.substring(0, 25)) +
+    formatField('60', 'SAO PAULO');
+
+  const additionalData = formatField('05', '***');
+  payload += formatField('62', additionalData);
+
+  payload += '6304';
+
+  const crc = crc16(payload);
+  payload += crc;
+
+  return payload;
+}
+
+function crc16(str: string): string {
+  let crc = 0xffff;
+  for (let i = 0; i < str.length; i++) {
+    crc ^= str.charCodeAt(i) << 8;
+    for (let j = 0; j < 8; j++) {
+      if (crc & 0x8000) {
+        crc = (crc << 1) ^ 0x1021;
+      } else {
+        crc <<= 1;
+      }
+      crc &= 0xffff;
+    }
+  }
+  return crc.toString(16).toUpperCase().padStart(4, '0');
+}
 
 export function CheckoutPage() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const product = stripeProducts[0];
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('stripe');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [pixCopied, setPixCopied] = useState(false);
 
-  const handleStripeCheckout = async () => {
-    setIsLoading(true);
-    setError(null);
+  const pixPayload = generatePixPayload(PIX_KEY, product.price, 'DESIGNACTIV');
 
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token || import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-        },
-        body: JSON.stringify({
-          price_id: product.priceId,
-          mode: product.mode,
-          success_url: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: window.location.href,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.url) {
-        throw new Error(data.error || 'Could not start Stripe checkout');
-      }
-
-      window.location.href = data.url;
-    } catch (err: any) {
-      setError(err.message || 'Could not start Stripe checkout');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleStripeCheckout = () => {
+    window.location.href = product.checkoutUrl;
   };
 
   const handlePaypalCheckout = () => {
@@ -58,7 +73,7 @@ export function CheckoutPage() {
   };
 
   const handleCopyPix = () => {
-    navigator.clipboard.writeText('+5511999999999');
+    navigator.clipboard.writeText(pixPayload);
     setPixCopied(true);
     setTimeout(() => setPixCopied(false), 2000);
   };
@@ -75,9 +90,9 @@ export function CheckoutPage() {
         </button>
 
         <div className="bg-[#160f2e] border border-[#2a1f5c] rounded-2xl overflow-hidden shadow-2xl">
-          <div className="bg-gradient-to-r from-brand-500/20 to-brand-700/20 border-b border-[#2a1f5c] px-6 py-3 flex items-center justify-center gap-2">
-            <Lock className="w-3.5 h-3.5 text-brand-400" />
-            <span className="text-brand-300 text-xs font-semibold uppercase tracking-wider">
+          <div className="bg-gradient-to-r from-green-600/80 to-green-700/80 border-b border-green-500/30 px-6 py-3 flex items-center justify-center gap-2">
+            <Lock className="w-3.5 h-3.5 text-white" />
+            <span className="text-white text-xs font-semibold uppercase tracking-wider">
               {t('checkout.badge')}
             </span>
           </div>
@@ -164,10 +179,25 @@ export function CheckoutPage() {
                   {t('checkout.pixInstructions')} <span className="text-white font-bold">${product.price}</span>
                 </p>
 
+                <div className="flex justify-center mb-4">
+                  <div className="bg-white p-3 rounded-xl">
+                    <QRCodeSVG
+                      value={pixPayload}
+                      size={180}
+                      level="M"
+                      includeMargin={false}
+                    />
+                  </div>
+                </div>
+
+                <p className="text-gray-400 text-xs text-center mb-4">
+                  Escaneie o QR Code acima com o app do seu banco
+                </p>
+
                 <div className="bg-[#0f0a1e] rounded-lg p-3 mb-4">
                   <p className="text-gray-400 text-xs mb-1">{t('checkout.pixKey')}</p>
                   <div className="flex items-center justify-between">
-                    <code className="text-white text-sm font-mono">+5511999999999</code>
+                    <code className="text-white text-sm font-mono">{PIX_KEY}</code>
                     <button
                       onClick={handleCopyPix}
                       className="flex items-center gap-1 text-brand-400 text-xs hover:text-brand-300 transition-colors"
@@ -235,23 +265,12 @@ export function CheckoutPage() {
                 <h3 className="text-white font-bold mb-1">{t('checkout.stripeTitle')}</h3>
                 <p className="text-gray-400 text-sm mb-4">{t('checkout.stripeCards')}</p>
 
-                {error && (
-                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-4 flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-red-300 text-sm font-semibold">Could not start Stripe checkout</p>
-                      <p className="text-red-400/80 text-xs mt-0.5">{error}</p>
-                    </div>
-                  </div>
-                )}
-
                 <button
                   onClick={handleStripeCheckout}
-                  disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2"
+                  className="w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2"
                 >
                   <CreditCard className="w-4 h-4" />
-                  {isLoading ? 'Processing...' : `${t('checkout.stripeButton')}`}
+                  {t('checkout.stripeButton')}
                 </button>
 
                 <p className="text-gray-500 text-xs text-center mt-3 flex items-center justify-center gap-1.5">

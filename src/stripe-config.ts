@@ -7,6 +7,7 @@ export interface StripeProduct {
   currency: string;
   currencySymbol: string;
   mode: 'payment' | 'subscription';
+  checkoutUrl: string;
 }
 
 export const stripeProducts: StripeProduct[] = [
@@ -18,7 +19,8 @@ export const stripeProducts: StripeProduct[] = [
     price: 49.00,
     currency: 'usd',
     currencySymbol: '$',
-    mode: 'payment'
+    mode: 'payment',
+    checkoutUrl: 'https://buy.stripe.com/5kQ6oHgNY4Tog5H0fhg7e01'
   }
 ];
 

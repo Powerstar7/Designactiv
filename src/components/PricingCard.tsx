@@ -1,7 +1,6 @@
 import React from 'react';
-import { Check, Loader2 } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { StripeProduct } from '../stripe-config';
-import { useStripeCheckout } from '../hooks/useStripeCheckout';
 
 interface PricingCardProps {
   product: StripeProduct;
@@ -9,10 +8,8 @@ interface PricingCardProps {
 }
 
 export const PricingCard: React.FC<PricingCardProps> = ({ product, featured = false }) => {
-  const { createCheckout, loading, error } = useStripeCheckout();
-
   const handleCheckout = () => {
-    createCheckout(product.priceId);
+    window.location.href = product.checkoutUrl;
   };
 
   return (
@@ -30,7 +27,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({ product, featured = fa
       <div className="text-center">
         <h3 className="text-2xl font-bold text-gray-900 mb-4">{product.name}</h3>
         <p className="text-gray-600 mb-6">{product.description}</p>
-        
+
         <div className="mb-8">
           <span className="text-5xl font-bold text-gray-900">
             {product.currencySymbol}{product.price}
@@ -61,26 +58,14 @@ export const PricingCard: React.FC<PricingCardProps> = ({ product, featured = fa
 
         <button
           onClick={handleCheckout}
-          disabled={loading}
           className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all ${
             featured
               ? 'bg-blue-500 hover:bg-blue-600 text-white'
               : 'bg-gray-900 hover:bg-gray-800 text-white'
-          } disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center`}
+          } flex items-center justify-center`}
         >
-          {loading ? (
-            <>
-              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              Processing...
-            </>
-          ) : (
-            'Get Lifetime Access'
-          )}
+          Get Lifetime Access
         </button>
-
-        {error && (
-          <p className="text-red-600 text-sm mt-4">{error}</p>
-        )}
       </div>
     </div>
   );
