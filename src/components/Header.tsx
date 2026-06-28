@@ -111,9 +111,9 @@ export function Header() {
                 <div className="hidden lg:block">
                   <SubscriptionStatus />
                 </div>
-                {subscription.hasAccess && subscription.planName && (
+                {subscription?.subscription_status === 'active' && (
                   <span className="hidden md:inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    {subscription.planName}
+                    Premium
                   </span>
                 )}
                 {profile?.is_admin && (
