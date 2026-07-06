@@ -5,7 +5,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useLanguage } from '../context/LanguageContext';
 import { stripeProducts } from '../stripe-config';
 
-type PaymentMethod = 'pix' | 'paypal' | 'stripe';
+type PaymentMethod = 'pix' | 'stripe';
 
 const PIX_KEY = '00819975745';
 
@@ -65,11 +65,7 @@ export function CheckoutPage() {
   const pixPayload = generatePixPayload(PIX_KEY, product.price, 'DESIGNACTIV');
 
   const handleStripeCheckout = () => {
-    window.location.href = product.checkoutUrl;
-  };
-
-  const handlePaypalCheckout = () => {
-    window.open('https://www.paypal.com/paypalme/designactiv/49', '_blank');
+    window.open(product.checkoutUrl, '_blank');
   };
 
   const handleCopyPix = () => {
@@ -132,7 +128,7 @@ export function CheckoutPage() {
 
             <div className="mb-6">
               <h2 className="text-white font-bold text-lg mb-4">{t('checkout.selectMethod')}</h2>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => setSelectedMethod('pix')}
                   className={`p-3 rounded-xl border-2 transition-all text-center ${
@@ -144,18 +140,6 @@ export function CheckoutPage() {
                   <div className="text-lg mb-1">BR</div>
                   <p className="text-white font-bold text-xs">PIX</p>
                   <p className="text-gray-500 text-[10px]">{t('checkout.pixDesc')}</p>
-                </button>
-                <button
-                  onClick={() => setSelectedMethod('paypal')}
-                  className={`p-3 rounded-xl border-2 transition-all text-center ${
-                    selectedMethod === 'paypal'
-                      ? 'border-brand-500 bg-brand-500/10'
-                      : 'border-[#2a1f5c] hover:border-[#3d2d6e]'
-                  }`}
-                >
-                  <div className="text-lg mb-1">P</div>
-                  <p className="text-white font-bold text-xs">PayPal</p>
-                  <p className="text-gray-500 text-[10px]">{t('checkout.paypalDesc')}</p>
                 </button>
                 <button
                   onClick={() => setSelectedMethod('stripe')}
@@ -241,22 +225,6 @@ export function CheckoutPage() {
                   <Mail className="w-4 h-4" />
                   {t('checkout.pixSendReceipt')}
                 </a>
-              </div>
-            )}
-
-            {selectedMethod === 'paypal' && (
-              <div className="bg-[#1e1540]/60 rounded-xl p-5 border border-[#2a1f5c]">
-                <h3 className="text-white font-bold mb-1">{t('checkout.paypalTitle')}</h3>
-                <p className="text-gray-400 text-sm mb-4">{t('checkout.paypalDesc2')}</p>
-
-                <p className="text-gray-400 text-xs mb-4">{t('checkout.paypalRedirect')}</p>
-
-                <button
-                  onClick={handlePaypalCheckout}
-                  className="w-full bg-[#0070ba] hover:bg-[#005ea6] text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
-                >
-                  {t('checkout.paypalButton')}
-                </button>
               </div>
             )}
 

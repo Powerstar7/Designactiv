@@ -1,17 +1,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { useAuth } from './useAuth';
+import { useAuth } from '../context/AuthContext';
 
 export interface UserSubscription {
-  customer_id: string | null;
-  subscription_id: string | null;
-  subscription_status: string | null;
   price_id: string | null;
-  current_period_start: number | null;
-  current_period_end: number | null;
-  cancel_at_period_end: boolean | null;
-  payment_method_brand: string | null;
-  payment_method_last4: string | null;
+  subscription_status: string | null;
 }
 
 export const useUserSubscription = () => {
@@ -28,18 +21,19 @@ export const useUserSubscription = () => {
 
     const fetchSubscription = async () => {
       try {
-        const { data, error } = await supabase
-          .from('stripe_user_subscriptions')
-          .select('*')
-          .single();
+        const { data } = await supabase
+          .from('profiles')
+          .select('has_access')
+          .eq('id', user.id)
+          .maybeSingle();
 
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error fetching subscription:', error);
+        if (data?.has_access) {
+          setSubscription({ price_id: null, subscription_status: 'active' });
+        } else {
+          setSubscription(null);
         }
-
-        setSubscription(data || null);
-      } catch (err) {
-        console.error('Error:', err);
+      } catch {
+        setSubscription(null);
       } finally {
         setLoading(false);
       }
@@ -51,6 +45,6 @@ export const useUserSubscription = () => {
   return {
     subscription,
     loading,
-    hasActiveSubscription: subscription?.subscription_status === 'active'
+    hasActiveSubscription: subscription?.subscription_status === 'active',
   };
 };

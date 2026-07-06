@@ -9,7 +9,7 @@ interface PricingCardProps {
 
 export const PricingCard: React.FC<PricingCardProps> = ({ product, featured = false }) => {
   const handleCheckout = () => {
-    window.location.href = product.checkoutUrl;
+    window.open(product.checkoutUrl, '_blank');
   };
 
   return (
