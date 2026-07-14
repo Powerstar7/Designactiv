@@ -1,64 +1,180 @@
-import React from 'react';
+import { useState } from 'react';
+import { Check, Zap, Gift, Shield, Loader2 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 import { stripeProducts } from '../stripe-config';
-import { PricingCard } from '../components/PricingCard';
+import { supabase } from '../lib/supabase';
 
-export const PricingPage: React.FC = () => {
+const powerfulApps = [
+  '1-Click Background Remover',
+  'All-In-One Design & Mockup Tool',
+  'Animated Ad Builder',
+  'Logo Creator',
+  'Smart Object Remover',
+  'Advanced Image Editor',
+];
+
+const bonusApps = ['Video Survey Pro', '3D Live Motion Photos', 'Image to SVG Converter'];
+
+export const PricingPage = () => {
+  const { t } = useLanguage();
+  const product = stripeProducts[0];
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleBuyNow = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const { data, error: fnError } = await supabase.functions.invoke('stripe-checkout', {
+        body: {
+          price_id: product.priceId,
+          mode: product.mode,
+          success_url: `${window.location.origin}/success`,
+          cancel_url: `${window.location.origin}/pricing`,
+        },
+        headers: session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : undefined,
+      });
+
+      if (fnError) throw fnError;
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      setLoading(false);
+    }
+  };
+
+  const includedFeatures = [
+    t('pricing.allTools'),
+    t('pricing.unlimited'),
+    t('pricing.commercial'),
+    t('pricing.cloud'),
+    t('pricing.support'),
+    t('pricing.templates'),
+    t('pricing.agency'),
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            Get Lifetime Access to All Design Tools
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Unlock the complete collection of professional design tools with a single purchase. 
-            No monthly fees, no limits, just unlimited creativity.
-          </p>
-        </div>
+    <section className="py-20 bg-[#0f0a1e] relative overflow-hidden min-h-screen">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-brand-700/10 rounded-full blur-3xl" />
+      </div>
 
-        <div className="flex justify-center">
-          <div className="w-full max-w-md">
-            {stripeProducts.map((product) => (
-              <PricingCard 
-                key={product.id} 
-                product={product} 
-                featured={true}
-              />
-            ))}
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div
+          className="rounded-3xl overflow-hidden shadow-2xl shadow-brand-500/20"
+          style={{
+            background: 'linear-gradient(135deg, #160f2e 0%, #1e1540 100%)',
+            border: '2px solid rgba(168, 85, 247, 0.4)',
+          }}
+        >
+          <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-3 text-center">
+            <span className="text-white font-black text-sm uppercase tracking-widest">
+              {t('pricing.packTitle')}
+            </span>
           </div>
-        </div>
 
-        <div className="mt-16 text-center">
-          <div className="max-w-4xl mx-auto">
-            <h3 className="text-2xl font-bold text-gray-900 mb-8">
-              What's Included in Your Purchase
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-blue-600">9</span>
+          <div className="p-8 md:p-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-gray-400 text-2xl font-bold">$</span>
+                  <span className="text-white text-7xl font-black leading-none">{product.price}</span>
+                  <div className="ml-2">
+                    <p className="text-gray-500 text-xs">/</p>
+                    <p className="text-gray-400 text-sm font-medium">{t('pricing.lifetimeAccess')}</p>
+                  </div>
                 </div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">Design Tools</h4>
-                <p className="text-gray-600">Complete suite of professional design applications</p>
+
+                <p className="text-gray-500 text-xs uppercase tracking-wider font-bold mt-6 mb-4">
+                  {t('pricing.whatsIncluded')}
+                </p>
+                <ul className="space-y-2.5">
+                  {includedFeatures.map((item) => (
+                    <li key={item} className="flex items-start gap-2.5">
+                      <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                      <span className="text-white text-sm font-semibold">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  onClick={handleBuyNow}
+                  disabled={loading}
+                  className="mt-8 w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-4 rounded-xl transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-green-500/40 text-base flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      {t('pricing.buyNow')} — ${product.price} Lifetime
+                    </>
+                  )}
+                </button>
+
+                {error && (
+                  <p className="text-red-400 text-xs text-center mt-3">{error}</p>
+                )}
+
+                <div className="flex items-center justify-center gap-2 mt-4 text-gray-500 text-xs">
+                  <Shield className="w-3.5 h-3.5 text-green-400" />
+                  <span>{t('pricing.moneyBack')}</span>
+                </div>
               </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">∞</span>
+
+              <div className="space-y-5">
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Zap className="w-4 h-4 text-brand-400" fill="currentColor" />
+                    <p className="text-white font-black text-sm uppercase tracking-wide">
+                      {t('pricing.powerfulApps')}
+                    </p>
+                  </div>
+                  <ul className="space-y-2">
+                    {powerfulApps.map((app) => (
+                      <li key={app} className="flex items-center gap-2.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-brand-400 flex-shrink-0" />
+                        <span className="text-gray-200 text-sm">{app}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">Unlimited Usage</h4>
-                <p className="text-gray-600">Create as many designs as you want, no restrictions</p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">💼</span>
+
+                <div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Gift className="w-4 h-4 text-green-400" />
+                    <p className="text-green-400 font-black text-sm uppercase tracking-wide">
+                      {t('pricing.bonusApps')}
+                    </p>
+                  </div>
+                  <ul className="space-y-2 mb-3">
+                    {bonusApps.map((app) => (
+                      <li key={app} className="flex items-center gap-2.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
+                        <span className="text-green-100 text-sm">{app}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-green-300 text-xs font-medium">{t('pricing.bonusNote')}</p>
                 </div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">Commercial License</h4>
-                <p className="text-gray-600">Use for client work and sell your creations</p>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };

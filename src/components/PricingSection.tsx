@@ -1,7 +1,8 @@
-import { Check, Zap, Gift, Shield } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Check, Zap, Gift, Shield, Loader2 } from 'lucide-react';
 import { stripeProducts } from '../stripe-config';
 import { useLanguage } from '../context/LanguageContext';
+import { supabase } from '../lib/supabase';
 
 const powerfulApps = [
   '1-Click Background Remover',
@@ -16,11 +17,31 @@ const bonusApps = ['Video Survey Pro', '3D Live Motion Photos', 'Image to SVG Co
 
 export function PricingSection() {
   const { t } = useLanguage();
-  const navigate = useNavigate();
   const product = stripeProducts[0];
+  const [loading, setLoading] = useState(false);
 
-  const handleCheckout = () => {
-    navigate('/checkout');
+  const handleCheckout = async () => {
+    try {
+      setLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data, error } = await supabase.functions.invoke('stripe-checkout', {
+        body: {
+          price_id: product.priceId,
+          mode: product.mode,
+          success_url: `${window.location.origin}/success`,
+          cancel_url: `${window.location.origin}/pricing`,
+        },
+        headers: session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : undefined,
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch {
+      setLoading(false);
+    }
   };
 
   const includedFeatures = [
@@ -77,9 +98,14 @@ export function PricingSection() {
 
                 <button
                   onClick={handleCheckout}
-                  className="mt-8 w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-black py-4 rounded-xl transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-brand-500/40 text-base"
+                  disabled={loading}
+                  className="mt-8 w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-4 rounded-xl transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-green-500/40 text-base flex items-center justify-center gap-2"
                 >
-                  {t('pricing.buyNow', 'Buy Now')} — ${product.price} Lifetime
+                  {loading ? (
+                    <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</>
+                  ) : (
+                    <>{t('pricing.buyNow', 'Buy Now')} — ${product.price} Lifetime</>
+                  )}
                 </button>
 
                 <div className="flex items-center justify-center gap-2 mt-4 text-gray-500 text-xs">

@@ -1,6 +1,7 @@
-import React from 'react';
-import { Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { Check, Loader2 } from 'lucide-react';
 import { StripeProduct } from '../stripe-config';
+import { supabase } from '../lib/supabase';
 
 interface PricingCardProps {
   product: StripeProduct;
@@ -8,8 +9,30 @@ interface PricingCardProps {
 }
 
 export const PricingCard: React.FC<PricingCardProps> = ({ product, featured = false }) => {
-  const handleCheckout = () => {
-    window.open(product.checkoutUrl, '_blank');
+  const [loading, setLoading] = useState(false);
+
+  const handleCheckout = async () => {
+    try {
+      setLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data, error } = await supabase.functions.invoke('stripe-checkout', {
+        body: {
+          price_id: product.priceId,
+          mode: product.mode,
+          success_url: `${window.location.origin}/success`,
+          cancel_url: `${window.location.origin}/pricing`,
+        },
+        headers: session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : undefined,
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch {
+      setLoading(false);
+    }
   };
 
   return (
@@ -58,13 +81,18 @@ export const PricingCard: React.FC<PricingCardProps> = ({ product, featured = fa
 
         <button
           onClick={handleCheckout}
+          disabled={loading}
           className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all ${
             featured
               ? 'bg-blue-500 hover:bg-blue-600 text-white'
               : 'bg-gray-900 hover:bg-gray-800 text-white'
-          } flex items-center justify-center`}
+          } disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
         >
-          Get Lifetime Access
+          {loading ? (
+            <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</>
+          ) : (
+            'Get Lifetime Access'
+          )}
         </button>
       </div>
     </div>

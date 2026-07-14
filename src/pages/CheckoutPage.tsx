@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Shield, Lock, CreditCard, Copy, Mail } from 'lucide-react';
+import { ArrowLeft, Shield, Lock, CreditCard, Copy, Mail, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import { QRCodeSVG } from 'qrcode.react';
 import { useLanguage } from '../context/LanguageContext';
 import { stripeProducts } from '../stripe-config';
@@ -61,11 +62,37 @@ export function CheckoutPage() {
   const product = stripeProducts[0];
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('stripe');
   const [pixCopied, setPixCopied] = useState(false);
+  const [stripeLoading, setStripeLoading] = useState(false);
+  const [stripeError, setStripeError] = useState<string | null>(null);
 
   const pixPayload = generatePixPayload(PIX_KEY, product.price, 'DESIGNACTIV');
 
-  const handleStripeCheckout = () => {
-    window.open(product.checkoutUrl, '_blank');
+  const handleStripeCheckout = async () => {
+    try {
+      setStripeLoading(true);
+      setStripeError(null);
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data, error } = await supabase.functions.invoke('stripe-checkout', {
+        body: {
+          price_id: product.priceId,
+          mode: product.mode,
+          success_url: `${window.location.origin}/success`,
+          cancel_url: `${window.location.origin}/checkout`,
+        },
+        headers: session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : undefined,
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
+    } catch (err) {
+      setStripeError(err instanceof Error ? err.message : 'An error occurred');
+      setStripeLoading(false);
+    }
   };
 
   const handleCopyPix = () => {
@@ -235,11 +262,19 @@ export function CheckoutPage() {
 
                 <button
                   onClick={handleStripeCheckout}
-                  className="w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2"
+                  disabled={stripeLoading}
+                  className="w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2"
                 >
-                  <CreditCard className="w-4 h-4" />
-                  {t('checkout.stripeButton')}
+                  {stripeLoading ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>
+                  ) : (
+                    <><CreditCard className="w-4 h-4" /> {t('checkout.stripeButton')}</>
+                  )}
                 </button>
+
+                {stripeError && (
+                  <p className="text-red-400 text-xs text-center mt-2">{stripeError}</p>
+                )}
 
                 <p className="text-gray-500 text-xs text-center mt-3 flex items-center justify-center gap-1.5">
                   <Shield className="w-3 h-3" />
