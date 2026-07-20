@@ -65,7 +65,12 @@ export const PricingPage = () => {
         throw new Error('No checkout URL returned');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const message = err instanceof Error ? err.message : 'An error occurred';
+      if (message.includes('Invalid API Key')) {
+        setError('Payment system is being configured. Please try again later or contact support.');
+      } else {
+        setError(message);
+      }
       setLoading(false);
     }
   };

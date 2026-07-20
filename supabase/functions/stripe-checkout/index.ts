@@ -3,7 +3,12 @@ import Stripe from 'npm:stripe@17.7.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
 
 const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
-const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')!;
+const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY') ?? '';
+
+if (!stripeSecret.startsWith('sk_')) {
+  console.error('STRIPE_SECRET_KEY is not configured correctly. It must start with sk_test_ or sk_live_');
+}
+
 const stripe = new Stripe(stripeSecret, {
   appInfo: {
     name: 'Bolt Integration',
@@ -40,6 +45,10 @@ Deno.serve(async (req) => {
 
     if (req.method !== 'POST') {
       return corsResponse({ error: 'Method not allowed' }, 405);
+    }
+
+    if (!stripeSecret.startsWith('sk_')) {
+      return corsResponse({ error: 'Stripe is not configured. Please set a valid STRIPE_SECRET_KEY.' }, 500);
     }
 
     const { price_id, success_url, cancel_url, mode } = await req.json();
