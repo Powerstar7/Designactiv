@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { Check, Loader2 } from 'lucide-react';
+import React from 'react';
+import { Check } from 'lucide-react';
 import { StripeProduct } from '../stripe-config';
-import { supabase } from '../lib/supabase';
 
 interface PricingCardProps {
   product: StripeProduct;
@@ -9,45 +8,9 @@ interface PricingCardProps {
 }
 
 export const PricingCard: React.FC<PricingCardProps> = ({ product, featured = false }) => {
-  const [loading, setLoading] = useState(false);
-
-  const handleCheckout = async () => {
-    try {
-      setLoading(true);
-
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      const { data: { session } } = await supabase.auth.getSession();
-
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'apikey': supabaseAnonKey,
-      };
-
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
-      } else {
-        headers['Authorization'] = `Bearer ${supabaseAnonKey}`;
-      }
-
-      const response = await fetch(`${supabaseUrl}/functions/v1/stripe-checkout`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          price_id: product.priceId,
-          mode: product.mode,
-          success_url: `${window.location.origin}/success`,
-          cancel_url: `${window.location.origin}/pricing`,
-        }),
-      });
-
-      const responseData = await response.json();
-      if (!response.ok) throw new Error(responseData.error || 'Request failed');
-      if (responseData.url) {
-        window.location.href = responseData.url;
-      }
-    } catch {
-      setLoading(false);
+  const handleCheckout = () => {
+    if (product.checkoutUrl) {
+      window.open(product.checkoutUrl, '_blank');
     }
   };
 
@@ -97,18 +60,13 @@ export const PricingCard: React.FC<PricingCardProps> = ({ product, featured = fa
 
         <button
           onClick={handleCheckout}
-          disabled={loading}
           className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all ${
             featured
               ? 'bg-blue-500 hover:bg-blue-600 text-white'
               : 'bg-gray-900 hover:bg-gray-800 text-white'
-          } disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+          } flex items-center justify-center gap-2`}
         >
-          {loading ? (
-            <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</>
-          ) : (
-            'Get Lifetime Access'
-          )}
+          Get Lifetime Access
         </button>
       </div>
     </div>

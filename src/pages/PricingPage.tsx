@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Check, Zap, Gift, Shield, Loader2 } from 'lucide-react';
+import { Check, Zap, Gift, Shield } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { stripeProducts } from '../stripe-config';
-import { supabase } from '../lib/supabase';
 
 const powerfulApps = [
   '1-Click Background Remover',
@@ -18,60 +17,10 @@ const bonusApps = ['Video Survey Pro', '3D Live Motion Photos', 'Image to SVG Co
 export const PricingPage = () => {
   const { t } = useLanguage();
   const product = stripeProducts[0];
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const handleBuyNow = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-      const { data: { session } } = await supabase.auth.getSession();
-
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'apikey': supabaseAnonKey,
-      };
-
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
-      } else {
-        headers['Authorization'] = `Bearer ${supabaseAnonKey}`;
-      }
-
-      const response = await fetch(`${supabaseUrl}/functions/v1/stripe-checkout`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          price_id: product.priceId,
-          mode: product.mode,
-          success_url: `${window.location.origin}/success`,
-          cancel_url: `${window.location.origin}/pricing`,
-        }),
-      });
-
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(responseData.error || `Request failed (${response.status})`);
-      }
-
-      if (responseData.url) {
-        window.location.href = responseData.url;
-      } else {
-        throw new Error('No checkout URL returned');
-      }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'An error occurred';
-      if (message.includes('Invalid API Key')) {
-        setError('Payment system is being configured. Please try again later or contact support.');
-      } else {
-        setError(message);
-      }
-      setLoading(false);
+  const handleBuyNow = () => {
+    if (product.checkoutUrl) {
+      window.open(product.checkoutUrl, '_blank');
     }
   };
 
@@ -132,24 +81,10 @@ export const PricingPage = () => {
 
                 <button
                   onClick={handleBuyNow}
-                  disabled={loading}
-                  className="mt-8 w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black py-4 rounded-xl transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-green-500/40 text-base flex items-center justify-center gap-2"
+                  className="mt-8 w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-black py-4 rounded-xl transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-green-500/40 text-base flex items-center justify-center gap-2"
                 >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      {t('pricing.buyNow')} — ${product.price} Lifetime
-                    </>
-                  )}
+                  {t('pricing.buyNow')} — ${product.price} Lifetime
                 </button>
-
-                {error && (
-                  <p className="text-red-400 text-xs text-center mt-3">{error}</p>
-                )}
 
                 <div className="flex items-center justify-center gap-2 mt-4 text-gray-500 text-xs">
                   <Shield className="w-3.5 h-3.5 text-green-400" />

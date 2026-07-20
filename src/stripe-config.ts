@@ -20,7 +20,7 @@ export const stripeProducts: StripeProduct[] = [
     currency: 'usd',
     currencySymbol: '$',
     mode: 'payment',
-    checkoutUrl: ''
+    checkoutUrl: 'https://buy.stripe.com/5kQ6oHgNY4Tog5H0fhg7e01'
   }
 ];
 
