@@ -24,13 +24,13 @@ export function PricingSection() {
   };
 
   const includedFeatures = [
-    t('pricing.allTools', 'All 6 Design Tools'),
-    t('pricing.unlimited', 'Unlimited Usage'),
-    t('pricing.commercial', 'Commercial License'),
-    t('pricing.cloud', 'Cloud Based'),
-    t('pricing.support', '24/7 VIP Support'),
-    t('pricing.templates', 'All Bonus Templates'),
-    t('pricing.agency', 'Agency License'),
+    t('pricing.allTools'),
+    t('pricing.unlimited'),
+    t('pricing.commercial'),
+    t('pricing.cloud'),
+    t('pricing.support'),
+    t('pricing.templates'),
+    t('pricing.agency'),
   ];
 
   return (
@@ -47,7 +47,7 @@ export function PricingSection() {
         >
           <div className="bg-gradient-to-r from-brand-500 to-brand-700 px-6 py-3 text-center">
             <span className="text-white font-black text-sm uppercase tracking-widest">
-              {t('pricing.packTitle', 'Design Activ — All-in-One Pack')}
+              {t('pricing.packTitle')}
             </span>
           </div>
 
@@ -59,12 +59,12 @@ export function PricingSection() {
                   <span className="text-white text-7xl font-black leading-none">{product.price}</span>
                   <div className="ml-2">
                     <p className="text-gray-500 text-xs">/</p>
-                    <p className="text-gray-400 text-sm font-medium">{t('pricing.lifetimeAccess', 'Lifetime Access')}</p>
+                    <p className="text-gray-400 text-sm font-medium">{t('pricing.lifetimeAccess')}</p>
                   </div>
                 </div>
 
                 <p className="text-gray-500 text-xs uppercase tracking-wider font-bold mt-6 mb-4">
-                  {t('pricing.whatsIncluded', "WHAT'S INCLUDED")}
+                  {t('pricing.whatsIncluded')}
                 </p>
                 <ul className="space-y-2.5">
                   {includedFeatures.map((item) => (
@@ -79,12 +79,12 @@ export function PricingSection() {
                   onClick={handleCheckout}
                   className="mt-8 w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-black py-4 rounded-xl transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-green-500/40 text-base flex items-center justify-center gap-2"
                 >
-                  {t('pricing.buyNow', 'Buy Now')} — ${product.price} Lifetime
+                  {t('pricing.buyNow')} — ${product.price} Lifetime
                 </button>
 
                 <div className="flex items-center justify-center gap-2 mt-4 text-gray-500 text-xs">
                   <Shield className="w-3.5 h-3.5 text-green-400" />
-                  <span>{t('pricing.moneyBack', '30-Day Money Back Guarantee — No Questions Asked')}</span>
+                  <span>{t('pricing.moneyBack')}</span>
                 </div>
               </div>
 
@@ -93,7 +93,7 @@ export function PricingSection() {
                   <div className="flex items-center gap-2 mb-3">
                     <Zap className="w-4 h-4 text-brand-400" fill="currentColor" />
                     <p className="text-white font-black text-sm uppercase tracking-wide">
-                      {t('pricing.powerfulApps', '6 POWERFUL APPS')}
+                      {t('pricing.powerfulApps')}
                     </p>
                   </div>
                   <ul className="space-y-2">
@@ -110,7 +110,7 @@ export function PricingSection() {
                   <div className="flex items-center gap-2 mb-3">
                     <Gift className="w-4 h-4 text-green-400" />
                     <p className="text-green-400 font-black text-sm uppercase tracking-wide">
-                      {t('pricing.bonusApps', '3 BONUS APPS — FREE!')}
+                      {t('pricing.bonusApps')}
                     </p>
                   </div>
                   <ul className="space-y-2 mb-3">
@@ -121,7 +121,7 @@ export function PricingSection() {
                       </li>
                     ))}
                   </ul>
-                  <p className="text-green-300 text-xs font-medium">{t('pricing.bonusNote', 'Bonus apps included at no extra cost!')}</p>
+                  <p className="text-green-300 text-xs font-medium">{t('pricing.bonusNote')}</p>
                 </div>
               </div>
             </div>

@@ -12,11 +12,15 @@ import { PricingPage } from './pages/PricingPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ToolPage } from './pages/ToolPage';
 import { AdminPage } from './pages/AdminPage';
+import { AffiliateRegisterPage } from './pages/AffiliateRegisterPage';
+import { AffiliateDashboardPage } from './pages/AffiliateDashboardPage';
+import { AffiliateAdminPage } from './pages/AffiliateAdminPage';
 import ShopPage from './pages/ShopPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
+import { AffiliateTracker } from './components/AffiliateTracker';
 
 function ChromeHeader() {
   const { pathname } = useLocation();
@@ -29,6 +33,7 @@ export default function App() {
     <LanguageProvider>
       <AuthProvider>
         <Router>
+          <AffiliateTracker />
           <div className="min-h-screen bg-[#0f0a1e] flex flex-col">
             <ChromeHeader />
             <main className="flex-1">
@@ -42,6 +47,15 @@ export default function App() {
                 <Route path="/shop" element={<ShopPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />
+                <Route path="/affiliate/register" element={<AffiliateRegisterPage />} />
+                <Route
+                  path="/affiliate/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <AffiliateDashboardPage />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route
                   path="/dashboard"
                   element={
@@ -63,6 +77,14 @@ export default function App() {
                   element={
                     <AdminRoute>
                       <AdminPage />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/affiliates"
+                  element={
+                    <AdminRoute>
+                      <AffiliateAdminPage />
                     </AdminRoute>
                   }
                 />

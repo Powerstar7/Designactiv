@@ -28,6 +28,7 @@ export function Header() {
     { label: t('nav.home'), path: '/' },
     { label: t('nav.dashboard'), path: '/dashboard' },
     { label: 'Pricing', path: '/pricing' },
+    { label: 'Affiliate', path: '/affiliate/register' },
   ];
 
   const handleSignOut = async () => {

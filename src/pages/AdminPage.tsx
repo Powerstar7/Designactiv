@@ -290,6 +290,14 @@ export function AdminPage() {
                     {t('admin.updateVideos')}
                     <ChevronRight className="w-4 h-4 ml-auto" />
                   </button>
+                  <button
+                    onClick={() => navigate('/admin/affiliates')}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl bg-[#1e1540] hover:bg-[#2a1f5c] transition-all text-sm text-gray-300 hover:text-white"
+                  >
+                    <TrendingUp className="w-4 h-4 text-green-400" />
+                    Manage Affiliates
+                    <ChevronRight className="w-4 h-4 ml-auto" />
+                  </button>
                 </div>
               </div>
             </div>
