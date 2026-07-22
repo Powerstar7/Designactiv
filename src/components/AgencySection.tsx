@@ -1,10 +1,6 @@
 import { useLanguage } from '../context/LanguageContext';
 
-interface AgencySectionProps {
-  onNavigate: (page: string) => void;
-}
-
-export default function AgencySection({ onNavigate: _onNavigate }: AgencySectionProps) {
+export default function AgencySection() {
   const { t } = useLanguage();
 
   return (

@@ -22,12 +22,12 @@ export const useUserSubscription = () => {
     const fetchSubscription = async () => {
       try {
         const { data } = await supabase
-          .from('profiles')
-          .select('has_access')
+          .from('user_profiles')
+          .select('is_active')
           .eq('id', user.id)
           .maybeSingle();
 
-        if (data?.has_access) {
+        if (data?.is_active) {
           setSubscription({ price_id: null, subscription_status: 'active' });
         } else {
           setSubscription(null);

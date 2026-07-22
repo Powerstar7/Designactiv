@@ -9,8 +9,13 @@ export interface Profile {
   id: string;
   full_name: string;
   email: string;
+  role: 'admin' | 'manager' | 'user';
+  is_active: boolean;
   is_admin: boolean;
   has_access: boolean;
+  avatar_url: string | null;
+  business_type: string | null;
+  company_name: string | null;
   created_at: string;
   updated_at: string;
 }

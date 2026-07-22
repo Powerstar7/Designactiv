@@ -7,11 +7,11 @@ import { supabase } from '../lib/supabase';
 async function destinationForUser(userId: string, redirect: string | null): Promise<string> {
   if (redirect) return redirect;
   const { data } = await supabase
-    .from('profiles')
-    .select('is_admin')
+    .from('user_profiles')
+    .select('role')
     .eq('id', userId)
     .maybeSingle();
-  return data?.is_admin ? '/admin' : '/dashboard';
+  return data?.role === 'admin' ? '/admin' : '/dashboard';
 }
 
 export function LoginPage() {

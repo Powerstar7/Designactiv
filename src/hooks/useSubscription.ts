@@ -17,12 +17,12 @@ export function useSubscription() {
     const check = async () => {
       try {
         const { data } = await supabase
-          .from('profiles')
-          .select('has_access')
+          .from('user_profiles')
+          .select('is_active')
           .eq('id', user.id)
           .maybeSingle();
 
-        setHasAccess(data?.has_access ?? false);
+        setHasAccess(data?.is_active ?? false);
       } catch {
         setHasAccess(false);
       } finally {

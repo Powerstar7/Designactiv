@@ -1,12 +1,10 @@
 import { Shield, Zap, Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 
-interface CTABannerProps {
-  onNavigate: (page: string) => void;
-}
-
-export default function CTABanner({ onNavigate }: CTABannerProps) {
+export default function CTABanner() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
 
   return (
     <section className="py-16 px-4" style={{ background: 'linear-gradient(135deg, #0f0a1e 0%, #160f2e 50%, #0f0a1e 100%)' }}>
@@ -28,7 +26,7 @@ export default function CTABanner({ onNavigate }: CTABannerProps) {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
           <button
-            onClick={() => onNavigate('shop')}
+            onClick={() => navigate('/checkout')}
             className="animate-pulse-btn bg-brand-500 hover:bg-brand-600 text-white font-black text-xl py-5 px-12 rounded-full transition-all duration-300 transform hover:scale-105 shadow-2xl glow-brand"
           >
             {t('cta.button')}

@@ -1,15 +1,13 @@
 import { ChevronRight, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import YouTubePlayer from './YouTubePlayer';
 
-interface HeroProps {
-  onNavigate: (page: string) => void;
-}
-
 const HERO_VIDEO_ID = 's9MvSFNVmzk';
 
-export default function Hero({ onNavigate }: HeroProps) {
+export default function Hero() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
 
   return (
     <section className="bg-gradient-to-b from-[#080515] to-[#0f0a1e] relative overflow-hidden">
@@ -39,13 +37,13 @@ export default function Hero({ onNavigate }: HeroProps) {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
             <button
-              onClick={() => onNavigate('shop')}
+              onClick={() => navigate('/checkout')}
               className="animate-pulse-btn bg-brand-500 hover:bg-brand-600 text-white font-black text-lg py-4 px-10 rounded-full transition-all duration-300 transform hover:scale-105 shadow-2xl glow-brand"
             >
               {t('hero.cta')}
             </button>
             <button
-              onClick={() => onNavigate('shop')}
+              onClick={() => navigate('/shop')}
               className="flex items-center gap-2 text-gray-300 hover:text-white font-semibold transition-colors group"
             >
               {t('hero.viewTools')}

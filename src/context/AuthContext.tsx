@@ -22,11 +22,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
-      .from('profiles')
+      .from('user_profiles')
       .select('*')
       .eq('id', userId)
       .maybeSingle();
-    setProfile(data);
+    if (data) {
+      setProfile({
+        ...data,
+        is_admin: data.role === 'admin',
+        has_access: data.is_active,
+      });
+    } else {
+      setProfile(null);
+    }
   };
 
   useEffect(() => {
@@ -61,12 +69,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, fullName: string): Promise<{ error: string | null }> => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { full_name: fullName } },
     });
     if (error) return { error: error.message };
+
+    if (data.user) {
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .upsert({
+          id: data.user.id,
+          email,
+          full_name: fullName,
+          role: 'user',
+          is_active: true,
+        }, { onConflict: 'id' });
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+      }
+    }
+
     return { error: null };
   };
 
